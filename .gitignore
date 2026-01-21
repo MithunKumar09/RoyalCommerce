@@ -1,0 +1,169 @@
+# Laravel Framework
+/project/vendor
+/project/.env
+/project/.env.example
+/project/.env.backup
+/project/.env.production
+/project/bootstrap/cache/*
+!/project/bootstrap/cache/.gitignore
+/project/storage/*.key
+/project/storage/framework/cache/*
+!/project/storage/framework/cache/.gitignore
+/project/storage/framework/sessions/*
+!/project/storage/framework/sessions/.gitignore
+/project/storage/framework/views/*
+!/project/storage/framework/views/.gitignore
+/project/storage/logs/*
+!/project/storage/logs/.gitignore
+
+# Dependencies
+/project/node_modules
+# /project/package-lock.json
+/project/yarn.lock
+# /project/composer.lock
+/project/vendor
+node_modules
+# package-lock.json
+yarn.lock
+
+# Build & Compiled Files
+/project/public/hot
+/project/public/storage
+/project/public/build
+/project/public/mix-manifest.json
+/project/public/vite-manifest.json
+/project/public/.htaccess
+/project/public/robots.txt
+/project/public/sitemap.xml
+
+# Documentation Files
+*.md
+*.MD
+*.pdf
+*.PDF
+*.txt
+*.TXT
+README.md
+README.MD
+CHANGELOG.md
+LICENSE.txt
+SETUP.md
+Documentation/
+/docs
+/documentation
+
+# IDE & Editor Files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+*.iml
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Logs
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Cache & Temporary Files
+*.cache
+*.tmp
+*.temp
+.cache/
+.tmp/
+.temp/
+*.swp
+*.swo
+~$*
+
+# Database Files
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.mdb
+*.accdb
+/database/*.sql
+/install/database/*.sql
+
+# Environment & Config
+.env
+.env.*
+!.env.example
+.env.local
+.env.*.local
+config.php
+config.local.php
+
+# Backup Files
+*.bak
+*.backup
+*.old
+*~
+*.orig
+
+# Testing
+/project/phpunit.xml
+/project/.phpunit.result.cache
+/project/coverage/
+*.coverage
+.phpunit.cache
+
+# SSL & Security Files
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+/project/storage/ssl/
+*.json
+# !package.json
+# !composer.json
+!tsconfig.json
+!jsconfig.json
+
+# Install Files
+/install/
+/installer/
+
+# Uploaded Files
+/uploads/
+/public/uploads/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+
+# Other Common Files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.exe
+*.dll
+*.so
+*.dylib
