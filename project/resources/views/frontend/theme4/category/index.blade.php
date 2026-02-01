@@ -228,16 +228,28 @@
     @php
         $t4Categories = $categories ?? collect();
     @endphp
-    {{-- Category strip (clone of homepage strip; isolated to category page to avoid impacting home) --}}
-    @include('frontend.theme4.partials.category_strip')
+    {{-- Category strip (shared Theme 4 partial) --}}
+    @include('frontend.theme4.partials.category_strip', [
+        't4Categories' => $t4Categories,
+        'activeCategorySlug' => $activeCategorySlug,
+        'sectionClass' => 't4-categories--category-page',
+        'sliderClass' => 't4-cat-strip-slider',
+        'itemClass' => '',
+        'linkClass' => '',
+        'iconClass' => '',
+        'titleClass' => '',
+    ])
   
     <div class="t4-container">
       <div class="t4-category-grid">
   
                 {{-- Sidebar --}}
                 <aside class="t4-sidebar">
-                    <div class="t4-card t4-filter">
-                        <h4 class="t4-filter__title">Filters</h4>
+                    <div class="t4-card t4-filter" id="t4-filter-drawer" role="dialog" aria-modal="true" aria-label="Filters" tabindex="-1">
+                        <div class="t4-filter__top">
+                            <h4 class="t4-filter__title">Filters</h4>
+                            <button type="button" class="t4-filter__close" data-t4-filter-close aria-label="Close filters">×</button>
+                        </div>
 
                         <div class="t4-filter__section">
                             <h5 class="t4-filter__label">Product Category</h5>
@@ -337,54 +349,73 @@
 
                 {{-- Main --}}
                 <main class="t4-main {{ $mainNoHeroClass }}">
+                    {{-- Mobile/tablet filter trigger (drawer) --}}
+                    <div class="t4-filterbar">
+                        <button type="button"
+                            class="t4-btn t4-btn--outline t4-filter-toggle"
+                            data-t4-filter-open
+                            aria-controls="t4-filter-drawer"
+                            aria-expanded="false">
+                            Filters
+                        </button>
+                    </div>
                     <div class="t4-hero-card">
                         {{-- Category banner slider (Option B) - customer side, admin-managed via Category Sliders --}}
                         @if ($hasCategoryCarousel && $heroSlidesCount > 0)
-                            <div class="t4-cat-banner t4-hide-while-loading" aria-label="Category banner">
-                                <div class="t4-cat-banner__viewport">
-                                    <div class="t4-cat-banner-slider">
-                                        @foreach ($heroSlides as $slide)
-                                            @php
-                                                $slideImg = asset('assets/images/category-sliders/' . $slide->photo);
-                                                $slideLink = !empty($slide->link) ? $slide->link : null;
-                                            @endphp
+                        {{-- Banner skeleton (only while loading) - same structure as carousel --}}
+                        <div class="t4-cat-banner-skeleton t4-skeleton-only" aria-hidden="true">
+                            <div class="t4-skeleton" style="height: 220px; border-radius: 16px; width: 100%;"></div>
+                        </div>
+                        
+                        {{-- Actual carousel --}}
+                        <div class="t4-cat-banner t4-hide-while-loading" aria-label="Category banner">
+                            <div class="t4-cat-banner__viewport">
+                                <div class="t4-cat-banner-slider">
+                                    @foreach ($heroSlides as $slide)
+                                        @php
+                                            $slideImg = asset('assets/images/category-sliders/' . $slide->photo);
+                                            $slideLink = !empty($slide->link) ? $slide->link : null;
+                                        @endphp
+                    
+                                        @if ($slideLink)
+                                            <a class="t4-cat-banner-slide" href="{{ $slideLink }}">
+                                                <img src="{{ $slideImg }}"
+                                                     alt="{{ $slide->title ?? 'Slide' }}"
+                                                     class="t4-cat-banner-img"
+                                                     loading="{{ $loop->first ? 'eager' : 'lazy' }}"
+                                                     @if($loop->first) fetchpriority="high" @endif>
+                                            </a>
+                                        @else
+                                            <div class="t4-cat-banner-slide">
+                                                <img src="{{ $slideImg }}"
+                                                     alt="{{ $slide->title ?? 'Slide' }}"
+                                                     class="t4-cat-banner-img"
+                                                     loading="{{ $loop->first ? 'eager' : 'lazy' }}"
+                                                     @if($loop->first) fetchpriority="high" @endif>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                    
+                            <div class="t4-cat-banner-arrows" aria-hidden="false">
+                                <button type="button" class="t4-cat-banner-arrow t4-cat-banner-prev" aria-label="Previous">‹</button>
+                                <button type="button" class="t4-cat-banner-arrow t4-cat-banner-next" aria-label="Next">›</button>
+                            </div>
+                        </div>
+                    @endif
 
-                                            @if ($slideLink)
-                                                <a class="t4-cat-banner-slide" href="{{ $slideLink }}">
-                                                    <div class="t4-cat-banner-media" style="background-image: url('{{ $slideImg }}');"></div>
-                                                </a>
-                                            @else
-                                                <div class="t4-cat-banner-slide">
-                                                    <div class="t4-cat-banner-media" style="background-image: url('{{ $slideImg }}');"></div>
-                                                </div>
-                                            @endif
-                                        @endforeach
+                        {{-- Explore section --}}
+                        @if ($exploreTiles instanceof \Illuminate\Support\Collection ? $exploreTiles->isNotEmpty() : count($exploreTiles))
+                            <div class="t4-explore-row t4-hide-while-loading">
+                                <div class="t4-explore-row__header">
+                                    <h4>Explore Products Categories</h4>
+                                    <div class="t4-arrow-group">
+                                        <button type="button" class="t4-circle-btn" data-scroll-target="#t4-explore-scroll" data-dir="prev" aria-label="Previous">‹</button>
+                                        <button type="button" class="t4-circle-btn" data-scroll-target="#t4-explore-scroll" data-dir="next" aria-label="Next">›</button>
                                     </div>
                                 </div>
 
-                                <div class="t4-cat-banner-arrows" aria-hidden="false">
-                                    <button type="button" class="t4-cat-banner-arrow t4-cat-banner-prev" aria-label="Previous">‹</button>
-                                    <button type="button" class="t4-cat-banner-arrow t4-cat-banner-next" aria-label="Next">›</button>
-                                </div>
-                            </div>
-
-                            {{-- Banner skeleton (only while loading) --}}
-                            <div class="t4-cat-banner t4-skeleton-only" aria-hidden="true">
-                                <div class="t4-skeleton" style="height: 220px; border-radius: 18px;"></div>
-                            </div>
-                        @endif
-
-                        {{-- Explore section --}}
-                        <div class="t4-explore-row t4-hide-while-loading">
-                            <div class="t4-explore-row__header">
-                                <h4>Explore Products Categories</h4>
-                                <div class="t4-arrow-group">
-                                    <button type="button" class="t4-circle-btn" data-scroll-target="#t4-explore-scroll" data-dir="prev" aria-label="Previous">‹</button>
-                                    <button type="button" class="t4-circle-btn" data-scroll-target="#t4-explore-scroll" data-dir="next" aria-label="Next">›</button>
-                                </div>
-                            </div>
-
-                            @if ($exploreTiles instanceof \Illuminate\Support\Collection ? $exploreTiles->isNotEmpty() : count($exploreTiles))
                                 <div class="t4-explore-scroll" id="t4-explore-scroll">
                                     @foreach ($exploreTiles as $tile)
                                         <a href="{{ $tile['url'] }}" class="t4-explore-item {{ $activeSubSlug === ($tile['slug'] ?? null) ? 'is-active' : '' }}">
@@ -396,20 +427,8 @@
                                         </a>
                                     @endforeach
                                 </div>
-                            @else
-                                <div class="t4-card" style="padding: 14px 16px; border-radius: 12px;">
-                                    <div style="font-size: 13px; color: #6B7280; font-weight: 700; margin-bottom: 10px;">
-                                        No subcategories available for this category yet.
-                                    </div>
-                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                        <a class="t4-btn t4-btn--ghost" href="{{ route('front.categories') }}">Browse All Categories</a>
-                                        @if (!empty($cat))
-                                            <a class="t4-btn t4-btn--primary" href="{{ route('front.category', [$cat->slug]) }}">View All Products in {{ $cat->name }}</a>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
 
                         {{-- Explore skeleton (only while loading) --}}
                         <div class="t4-explore-row t4-skeleton-only" aria-hidden="true">
@@ -425,7 +444,68 @@
                         </div>
                     </div>
 
-                    {{-- Featured banner is admin-controlled; render only when valid data exists (avoid empty containers). --}}
+                                        {{-- Main Category Spotlight Section --}}
+                                        @if (!empty($cat))
+                                        @php
+                                            $mainCategoryImage = !empty($cat->image) 
+                                                ? asset('assets/images/categories/' . $cat->image) 
+                                                : (!empty($cat->photo) 
+                                                    ? asset('assets/images/categories/' . $cat->photo) 
+                                                    : asset('assets/images/noimage.png'));
+                                            $mainCategoryName = $cat->name ?? 'Category';
+                                            $mainCategoryUrl = route('front.category', $cat->slug);
+                                        @endphp
+                                        <div class="t4-main-category-spotlight t4-hide-while-loading">
+                                            <div class="t4-main-category-spotlight__media">
+                                                <img src="{{ $mainCategoryImage }}" alt="{{ $mainCategoryName }}">
+                                            </div>
+                                            <div class="t4-main-category-spotlight__content">
+                                                <h3 class="t4-main-category-spotlight__title">{{ $mainCategoryName }}</h3>
+                                                @if (!empty($cat->description))
+                                                    <div class="t4-main-category-spotlight__description">
+                                                        {!! $cat->description !!}
+                                                    </div>
+                                                @else
+                                                    {{-- Fallback to hardcoded description if database description is empty --}}
+                                                    <p class="t4-main-category-spotlight__description">
+                                                        Havells is a leading electrical equipment and consumer appliances brand, known for reliable and energy-efficient solutions.
+                                                    </p>
+                                                    <p class="t4-main-category-spotlight__description">
+                                                        Its product range includes fans, lighting, switches, cables, and home appliances for residential and commercial use.
+                                                    </p>
+                                                @endif
+                                                <ul class="t4-main-category-spotlight__features">
+                                                    <li>
+                                                        <span class="t4-main-category-spotlight__icon">●</span>
+                                                        Energy-efficient BLDC motors with 50% power savings
+                                                    </li>
+                                                    <li>
+                                                        <span class="t4-main-category-spotlight__icon">●</span>
+                                                        Aerodynamic blade design for superior air delivery
+                                                    </li>
+                                                    <li>
+                                                        <span class="t4-main-category-spotlight__icon">●</span>
+                                                        Silent operation below 45dB noise level
+                                                    </li>
+                                                    <li>
+                                                        <span class="t4-main-category-spotlight__icon">●</span>
+                                                        Remote control with timer and speed settings
+                                                    </li>
+                                                    <li>
+                                                        <span class="t4-main-category-spotlight__icon">●</span>
+                                                        5-year comprehensive warranty coverage
+                                                    </li>
+                                                </ul>
+                                                <a href="{{ $mainCategoryUrl }}" class="t4-btn t4-btn--outline t4-main-category-spotlight__cta">
+                                                    View Products →
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                    {{-- NEW DESIGN SECTIONS - Based on Figma Design --}}
+                    
+                    {{-- Brand Spotlight Section (Two-column layout with image and text) --}}
                     @php
                         $hasFeaturedBanner = !empty($featuredBanner) && !empty($featuredBanner->photo);
                     @endphp
@@ -443,46 +523,38 @@
                                 ->filter();
                         @endphp
 
-                        <div class="t4-feature-spotlight t4-hide-while-loading">
-                            <div class="t4-feature-spotlight__media">
+                        <div class="t4-brand-spotlight t4-hide-while-loading">
+                            <div class="t4-brand-spotlight__media">
                                 <img src="{{ $fbImg }}" alt="{{ $fbTitle ?? 'Featured' }}">
                             </div>
-                            <div class="t4-feature-spotlight__content">
+                            <div class="t4-brand-spotlight__content">
                                 @if (!empty($fbTitle))
-                                    <h3>{{ $fbTitle }}</h3>
+                                    <h3 class="t4-brand-spotlight__title">{{ $fbTitle }}</h3>
                                 @endif
                                 @if (!empty($fbSubtitle))
-                                    <p>{{ $fbSubtitle }}</p>
+                                    <p class="t4-brand-spotlight__description">{{ $fbSubtitle }}</p>
                                 @endif
-                                @if ($fbPoints->count() > 1)
-                                    <ul>
+                                @if ($fbPoints->count() > 0)
+                                    <ul class="t4-brand-spotlight__features">
                                         @foreach ($fbPoints as $point)
-                                            <li>{{ $point }}</li>
+                                            <li>
+                                                <span class="t4-brand-spotlight__icon">●</span>
+                                                {{ $point }}
+                                            </li>
                                         @endforeach
                                     </ul>
                                 @endif
                                 @if (!empty($fbLink))
-                                    <a class="t4-btn t4-btn--outline" href="{{ $fbLink }}">View Products</a>
-                                @endif
-                            </div>
-                        </div>
-                    @else
-                        <div class="t4-card t4-hide-while-loading" style="margin-top: 16px; padding: 14px 16px; border-radius: 16px;">
-                            <div style="font-size: 13px; color: #6B7280; font-weight: 700; margin-bottom: 10px;">
-                                No featured banner is configured for this category.
-                            </div>
-                            <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-                                <a class="t4-btn t4-btn--ghost" href="{{ route('front.categories') }}">Browse Categories</a>
-                                @if (!empty($cat))
-                                    <a class="t4-btn t4-btn--primary" href="{{ route('front.category', [$cat->slug]) }}">Shop {{ $cat->name }}</a>
+                                    <a class="t4-btn t4-btn--primary t4-brand-spotlight__cta" href="{{ $fbLink }}">View Products →</a>
                                 @endif
                             </div>
                         </div>
                     @endif
 
+                    {{-- Brand Logos Strip (Horizontal Carousel) --}}
                     @if ($partners instanceof \Illuminate\Support\Collection ? $partners->isNotEmpty() : count($partners))
-                        <div class="t4-brand-strip t4-hide-while-loading">
-                            <div class="t4-brand-strip__row">
+                        <div class="t4-brand-logos-strip t4-hide-while-loading">
+                            <div class="t4-brand-logos-strip__slider">
                                 @foreach ($partners as $index => $partner)
                                     @php
                                         $partnerImg = !empty($partner->photo)
@@ -490,7 +562,7 @@
                                             : asset('assets/images/noimage.png');
                                         $partnerLink = !empty($partner->link) ? $partner->link : null;
                                     @endphp
-                                    <div class="t4-brand-pill {{ $index === 0 ? 'is-active' : '' }}">
+                                    <div class="t4-brand-logo-item {{ $index === 0 ? 'is-active' : '' }}">
                                         @if ($partnerLink)
                                             <a href="{{ $partnerLink }}" target="_blank" rel="noopener noreferrer">
                                                 <img src="{{ $partnerImg }}" alt="Brand">
@@ -527,16 +599,16 @@
                     {{-- Product carousel skeletons (only while loading) --}}
                     <div class="t4-skeleton-only" aria-hidden="true">
                         @for ($s = 0; $s < 2; $s++)
-                            <div class="t4-section">
-                                <div class="t4-section__header">
+                            <div class="t4-product-carousel-section">
+                                <div class="t4-product-carousel-section__header">
                                     <div class="t4-skeleton t4-skel-line t4-skel-line--title"></div>
-                                    <div class="t4-section__controls">
-                                        <button type="button" class="t4-nav-btn" aria-label="Previous">‹</button>
-                                        <button type="button" class="t4-nav-btn" aria-label="Next">›</button>
+                                    <div class="t4-product-carousel-section__controls">
+                                        <button type="button" class="t4-circle-btn" aria-label="Previous">‹</button>
+                                        <button type="button" class="t4-circle-btn" aria-label="Next">›</button>
                                     </div>
                                 </div>
                                 <div class="t4-skel-slider">
-                                    @for ($i = 0; $i < 6; $i++)
+                                    @for ($i = 0; $i < 4; $i++)
                                         <div>
                                             <div class="t4-skeleton t4-skel-card__img"></div>
                                             <div class="t4-skeleton t4-skel-card__line"></div>
@@ -548,46 +620,57 @@
                         @endfor
                     </div>
 
-                    @foreach ($sectionsData as $section)
-                        @php
-                            $sectionTitle = $section['title'] ?? '';
-                            $sectionLimit = (int) ($section['limit'] ?? 8);
-                            $sectionLimit = $sectionLimit > 0 ? $sectionLimit : 8;
-
-                            $sectionProducts = $section['products'] ?? collect();
-                            if (is_array($sectionProducts)) {
-                                $sectionProducts = collect($sectionProducts);
-                            } elseif ($sectionProducts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-                                $sectionProducts = $sectionProducts->getCollection();
-                            } elseif (!($sectionProducts instanceof \Illuminate\Support\Collection)) {
-                                $sectionProducts = collect();
-                            }
-
-                            $sectionProducts = $sectionProducts->take($sectionLimit);
-                        @endphp
-
-                        @if ($sectionProducts->isNotEmpty())
-                            <div class="t4-section t4-hide-while-loading">
-                                <div class="t4-section__header">
-                                    <h4>{{ $sectionTitle }}</h4>
-                                    <div class="t4-section__controls">
-                                        <button type="button" class="t4-nav-btn" data-t4-dir="prev" aria-label="Previous">‹</button>
-                                        <button type="button" class="t4-nav-btn" data-t4-dir="next" aria-label="Next">›</button>
-                                    </div>
-                                </div>
-
-                                <div class="t4-product-slider">
-                                    @foreach ($sectionProducts as $product)
-                                        <div class="t4-slide">
-                                            @include('frontend.theme4.category.product_card', ['product' => $product])
-                                        </div>
-                                    @endforeach
+                    {{-- Featured Products Carousel --}}
+                    @php
+                        $featuredProductsList = $featuredProducts instanceof \Illuminate\Support\Collection ? $featuredProducts->take(8) : collect();
+                    @endphp
+                    @if ($featuredProductsList->isNotEmpty())
+                        <div class="t4-product-carousel-section t4-hide-while-loading">
+                            <div class="t4-product-carousel-section__header">
+                                <h4 class="t4-product-carousel-section__title">Featured Havells Products</h4>
+                                <div class="t4-product-carousel-section__controls">
+                                    <button type="button" class="t4-circle-btn t4-product-carousel-prev" data-carousel-target="featured" aria-label="Previous">‹</button>
+                                    <button type="button" class="t4-circle-btn t4-product-carousel-next" data-carousel-target="featured" aria-label="Next">›</button>
                                 </div>
                             </div>
-                        @endif
-                    @endforeach
+                            <div class="t4-product-carousel t4-product-carousel--featured" data-carousel-id="featured">
+                                @foreach ($featuredProductsList as $product)
+                                    <div class="t4-product-carousel__slide">
+                                        @include('frontend.theme4.category.product_card', ['product' => $product])
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="t4-carousel-progress">
+                                <div class="t4-carousel-progress__bar" data-progress-target="featured"></div>
+                            </div>
+                        </div>
+                    @endif
 
-                    <div class="t4-divider"><span></span></div>
+                    {{-- Appliances and Utilities Carousel --}}
+                    @php
+                        $appliancesProducts = $bestSellers instanceof \Illuminate\Support\Collection ? $bestSellers->take(8) : collect();
+                    @endphp
+                    @if ($appliancesProducts->isNotEmpty())
+                        <div class="t4-product-carousel-section t4-hide-while-loading">
+                            <div class="t4-product-carousel-section__header">
+                                <h4 class="t4-product-carousel-section__title">APPLIANCES AND UTILITIES</h4>
+                                <div class="t4-product-carousel-section__controls">
+                                    <button type="button" class="t4-circle-btn t4-product-carousel-prev" data-carousel-target="appliances" aria-label="Previous">‹</button>
+                                    <button type="button" class="t4-circle-btn t4-product-carousel-next" data-carousel-target="appliances" aria-label="Next">›</button>
+                                </div>
+                            </div>
+                            <div class="t4-product-carousel t4-product-carousel--appliances" data-carousel-id="appliances">
+                                @foreach ($appliancesProducts as $product)
+                                    <div class="t4-product-carousel__slide">
+                                        @include('frontend.theme4.category.product_card', ['product' => $product])
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="t4-carousel-progress">
+                                <div class="t4-carousel-progress__bar" data-progress-target="appliances"></div>
+                            </div>
+                        </div>
+                    @endif
 
                     {{-- Main product listing grid (fills the page; avoids "empty right side" when carousels are empty) --}}
                     @php
@@ -649,7 +732,7 @@
 
                         {{-- Optional pagination (hidden when empty) --}}
                         <div class="t4-pagination t4-hide-while-loading">
-                            {{ $prods->links('includes.frontend.pagination') }}
+                            @php echo $__env->make('partials.front.pagination-links', ['paginator' => $prods])->render(); @endphp
                         </div>
                     @endif
 
@@ -671,9 +754,10 @@
         </div>
     </div>
 
-    <input type="hidden" id="update_min_price" value="">
-    <input type="hidden" id="update_max_price" value="">
-@endsection
+    {{-- Backdrop for mobile/tablet filter drawer --}}
+    <div class="t4-filter-backdrop" data-t4-filter-close aria-hidden="true"></div>
+
+@include('partials.front.filter-hidden-inputs')@endsection
 
 @section('script')
     <script>
@@ -681,6 +765,65 @@
         // Dev-only diagnostics for Theme 4 Category page
         // ------------------------------------------------------------
         const __T4_DEBUG__ = {{ (app()->environment(['local', 'development']) || config('app.debug')) ? 'true' : 'false' }};
+
+        // ------------------------------------------------------------
+        // Mobile/Tablet Filter Drawer (Theme4 category)
+        // - Reuses existing .t4-filter markup (no duplication)
+        // - Uses transform-based hiding (no display:none) to keep price slider stable
+        // ------------------------------------------------------------
+        (function() {
+            const body = document.body;
+            if (!body) return;
+
+            const drawer = document.getElementById('t4-filter-drawer');
+            const backdrop = document.querySelector('.t4-filter-backdrop');
+            const openBtn = document.querySelector('[data-t4-filter-open]');
+
+            if (!drawer || !backdrop || !openBtn) return;
+
+            function setExpanded(isExpanded) {
+                openBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            }
+
+            function openDrawer() {
+                body.classList.add('t4-filter-open');
+                drawer.classList.add('is-open');
+                setExpanded(true);
+                try { drawer.focus({ preventScroll: true }); } catch (e) {}
+            }
+
+            function closeDrawer() {
+                body.classList.remove('t4-filter-open');
+                drawer.classList.remove('is-open');
+                setExpanded(false);
+            }
+
+            openBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                openDrawer();
+            });
+
+            backdrop.addEventListener('click', function() {
+                closeDrawer();
+            });
+
+            drawer.addEventListener('click', function(e) {
+                const target = e.target;
+                if (target && target.closest && target.closest('[data-t4-filter-close]')) {
+                    e.preventDefault();
+                    closeDrawer();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeDrawer();
+            });
+
+            // Defensive: if user rotates / resizes back to desktop, ensure drawer is closed & scrolling restored
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 1200) closeDrawer();
+            });
+        })();
 
         (function () {
             if (!__T4_DEBUG__) return;
@@ -916,6 +1059,100 @@
                 : $target.scrollLeft() - amount;
             $target.animate({ scrollLeft: nextLeft }, 200);
         });
+
+        // Initialize product carousels with horizontal scroll and progress bar
+        (function($) {
+            function updateProgressBar($carousel, carouselId) {
+                const scrollLeft = $carousel.scrollLeft();
+                const scrollWidth = $carousel[0].scrollWidth;
+                const clientWidth = $carousel[0].clientWidth;
+                const maxScroll = scrollWidth - clientWidth;
+                
+                let progress = 0;
+                if (maxScroll > 0) {
+                    progress = Math.min(100, (scrollLeft / maxScroll) * 100);
+                } else {
+                    progress = 100; // All items visible
+                }
+                
+                const $progressBar = $('.t4-carousel-progress__bar[data-progress-target="' + carouselId + '"]');
+                if ($progressBar.length) {
+                    $progressBar.css('width', progress + '%');
+                }
+            }
+            
+            function initProductCarousels() {
+                $('.t4-product-carousel').each(function() {
+                    const $carousel = $(this);
+                    const carouselId = $carousel.data('carousel-id');
+                    
+                    // Remove Slick if already initialized
+                    if ($carousel.hasClass('slick-initialized')) {
+                        try {
+                            $carousel.slick('unslick');
+                        } catch(e) {}
+                        $carousel.removeClass('slick-initialized');
+                    }
+                    
+                    // Remove any Slick-generated elements
+                    $carousel.find('.slick-list, .slick-track').remove();
+                    
+                    // Ensure flex layout
+                    $carousel.css({
+                        'display': 'flex',
+                        'flex-wrap': 'nowrap'
+                    });
+                    
+                    // Bind scroll event
+                    $carousel.off('scroll.carousel').on('scroll.carousel', function() {
+                        updateProgressBar($carousel, carouselId);
+                    });
+                    
+                    // Initialize progress bar
+                    setTimeout(function() {
+                        updateProgressBar($carousel, carouselId);
+                    }, 100);
+                });
+                
+                // Wire carousel navigation buttons
+                $('.t4-product-carousel-prev, .t4-product-carousel-next').off('click.carousel').on('click.carousel', function() {
+                    const target = $(this).data('carousel-target');
+                    const $carousel = $('.t4-product-carousel[data-carousel-id="' + target + '"]');
+                    if ($carousel.length) {
+                        const cardWidth = $carousel.find('.t4-product-carousel__slide').first().outerWidth(true) || 296;
+                        const currentScroll = $carousel.scrollLeft();
+                        const newScroll = $(this).hasClass('t4-product-carousel-prev') 
+                            ? currentScroll - cardWidth 
+                            : currentScroll + cardWidth;
+                        
+                        $carousel.animate({ scrollLeft: newScroll }, 300, function() {
+                            updateProgressBar($carousel, target);
+                        });
+                    }
+                });
+            }
+            
+            $(document).ready(function() {
+                initProductCarousels();
+            });
+            
+            $(window).on('load', function() {
+                setTimeout(initProductCarousels, 200);
+            });
+            
+            // Update progress on window resize
+            let resizeTimer;
+            $(window).on('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    $('.t4-product-carousel').each(function() {
+                        const $carousel = $(this);
+                        const carouselId = $carousel.data('carousel-id');
+                        updateProgressBar($carousel, carouselId);
+                    });
+                }, 250);
+            });
+        })(jQuery);
     </script>
 
     <script type="text/javascript">
@@ -953,19 +1190,46 @@
 
             // Initialize on DOM ready
             $(function() {
-                // Clear loading state first
+                // CRITICAL: Remove loading state IMMEDIATELY to show carousel
                 $('body').removeClass('t4-loading');
+                
+                // Force banner visibility
+                $('.t4-cat-banner').css({
+                    'display': 'block',
+                    'visibility': 'visible',
+                    'opacity': '1'
+                });
+                
+                // Ensure first slide is visible even before Slick initializes
+                $('.t4-cat-banner-slider:not(.slick-initialized) .t4-cat-banner-slide:first-child').css({
+                    'display': 'block',
+                    'width': '100%'
+                });
+                
                 // Small delay to ensure DOM is fully ready
                 setTimeout(function() {
                     initT4CategoryBanner();
                 }, 100);
+                
+                // Fallback: Remove loading state after 1 second to prevent stuck state
+                setTimeout(function() {
+                    $('body').removeClass('t4-loading');
+                }, 1000);
             });
 
             // Also on window load (defensive)
             $(window).on('load', function() {
-                $('body').removeClass('t4-loading');
+                // Force banner visibility again
+                $('.t4-cat-banner').css({
+                    'display': 'block',
+                    'visibility': 'visible',
+                    'opacity': '1'
+                });
+                
                 setTimeout(function() {
                     initT4CategoryBanner();
+                    // Ensure loading state is removed after window load
+                    $('body').removeClass('t4-loading');
                 }, 50);
             });
 
@@ -976,24 +1240,60 @@
 
             function initT4CategoryBanner() {
                 const $slider = $('.t4-cat-banner-slider');
-                if (!$slider.length) return;
-                if ($slider.hasClass('slick-initialized')) return;
+                if (!$slider.length) {
+                    // Remove loading state if no slider exists
+                    $('body').removeClass('t4-loading');
+                    return;
+                }
+                if ($slider.hasClass('slick-initialized')) {
+                    // Already initialized; ensure layout is correct
+                    if (typeof $slider.slick === 'function') {
+                        try { $slider.slick('setPosition'); } catch (e) {}
+                    }
+                    $('body').removeClass('t4-loading');
+                    return;
+                }
 
                 const $banner = $slider.closest('.t4-cat-banner');
                 const $prev = $banner.find('.t4-cat-banner-prev');
                 const $next = $banner.find('.t4-cat-banner-next');
 
+                // Ensure slider container is visible BEFORE checking slide count
+                $banner.css({
+                    'display': 'block',
+                    'visibility': 'visible',
+                    'opacity': '1'
+                });
+
                 const slideCount = $slider.find('.t4-cat-banner-slide').length;
                 if (slideCount <= 1) {
                     // Keep first slide visible (CSS handles non-initialized state); hide arrows
                     $banner.removeClass('is-slick');
-                    $slider.find('.t4-cat-banner-slide:first-child').css('display', 'block');
+                    $slider.find('.t4-cat-banner-slide:first-child').css({
+                        'display': 'block',
+                        'width': '100%'
+                    });
+                    $slider.find('.t4-cat-banner-slide:first-child img').css({
+                        'display': 'block',
+                        'width': '100%'
+                    });
+                    // Remove loading state
+                    $('body').removeClass('t4-loading');
                     return;
                 }
 
                 if (typeof $.fn.slick !== 'function') {
                     $banner.removeClass('is-slick');
-                    $slider.find('.t4-cat-banner-slide:first-child').css('display', 'block');
+                    $slider.find('.t4-cat-banner-slide:first-child').css({
+                        'display': 'block',
+                        'width': '100%'
+                    });
+                    $slider.find('.t4-cat-banner-slide:first-child img').css({
+                        'display': 'block',
+                        'width': '100%'
+                    });
+                    // Remove loading state
+                    $('body').removeClass('t4-loading');
                     return;
                 }
 
@@ -1005,6 +1305,21 @@
                 });
 
                 try {
+                    // Bind handlers BEFORE initializing Slick (so init fires are captured)
+                    $slider.off('.t4CatBanner');
+                    $slider.on('init.t4CatBanner reInit.t4CatBanner afterChange.t4CatBanner', function() {
+                        $banner.addClass('is-slick');
+
+                        // Maintain height chain; don't force widths (Slick controls track width)
+                        const $list = $slider.find('.slick-list');
+                        const $track = $slider.find('.slick-track');
+                        if ($list.length) $list.css({ height: '100%' });
+                        if ($track.length) $track.css({ height: '100%' });
+
+                        // Remove loading state after successful initialization/changes
+                        $('body').removeClass('t4-loading');
+                    });
+
                     $slider.slick({
                         slidesToShow: 1,
                         slidesToScroll: 1,
@@ -1015,32 +1330,32 @@
                         autoplaySpeed: 4500,
                         pauseOnHover: true,
                         adaptiveHeight: false,
-                        speed: 450,
-                        cssEase: 'ease',
+                        speed: 520,
+                        cssEase: 'ease-in-out',
                         prevArrow: $prev.length ? $prev : null,
                         nextArrow: $next.length ? $next : null,
-                        fade: false,
-                        useTransform: true
+                        fade: true,
+                        useTransform: true,
+                        waitForAnimate: true
                     });
-
-                    $banner.addClass('is-slick');
-
-                    // Force proper sizing after init
-                    $slider.on('init reInit', function() {
-                        const $list = $slider.find('.slick-list');
-                        const $track = $slider.find('.slick-track');
-                        if ($list.length) $list.css('width', '100%');
-                        if ($track.length) $track.css('width', '100%');
-                    });
-
-                    // Trigger reInit to apply sizing
-                    if ($slider.hasClass('slick-initialized')) {
-                        $slider.slick('setPosition');
-                    }
                 } catch (e) {
                     console.error('[T4 Category] Banner slider init error:', e);
                     $banner.removeClass('is-slick');
-                    $slider.find('.t4-cat-banner-slide:first-child').css('display', 'block');
+                    const $firstSlide = $slider.find('.t4-cat-banner-slide:first-child');
+                    $firstSlide.css({
+                        'display': 'block',
+                        'width': '100%',
+                        'height': '100%'
+                    });
+                    $firstSlide.find('img').css({
+                        'display': 'block',
+                        'opacity': '1',
+                        'visibility': 'visible',
+                        'width': '100%',
+                        'height': '100%'
+                    });
+                    // Remove loading state even on error
+                    $('body').removeClass('t4-loading');
                 }
             }
         })(jQuery);

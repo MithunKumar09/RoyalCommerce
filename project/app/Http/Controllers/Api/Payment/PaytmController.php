@@ -379,6 +379,9 @@ class PaytmController extends Controller
 
     public function paytmCallback(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
 
         $order_id = $request['ORDERID'];
         $order = Order::where('order_number', $order_id)->first();

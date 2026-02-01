@@ -179,7 +179,7 @@
                                 alt="no-blog-found">
                         </div>
                     @endforelse
-                    {{ $blogs->links('includes.frontend.pagination') }}
+                    @php echo $__env->make('partials.front.pagination-links', ['paginator' => $blogs])->render(); @endphp
                 </div>
             </div>
         </div>

@@ -12,17 +12,17 @@
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/icofont.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
-    @include('includes.frontend.extra_head')
+    @include('partials.global.extra-head')
     @yield('css')
 
 </head>
@@ -38,34 +38,14 @@
     <!-- header area -->
     @include('includes.frontend.header')
 
-    <!-- if route is user panel then show vendor.mobile-header else show frontend.mobile_menu -->
+@include('partials.front.mobile-header-switch')
 
-    @php
-        $url = url()->current();
-        $explodeUrl = explode('/',$url);
-
-    @endphp
-
-    @if(in_array('user',$explodeUrl))
-    <!-- frontend mobile menu -->
-    @include('includes.user.mobile-header')
-    @elseif(in_array("rider",$explodeUrl))
-    @include('includes.rider.mobile-header')
-    @else 
-    @include('includes.frontend.mobile_menu')
-        <!-- user panel mobile sidebar -->
-
-    @endif
-   
-
-    <div class="overlay"></div>
+    @include('partials.front.overlay')
 
     @yield('content')
 
 
-    <!-- footer section -->
-    @include('includes.frontend.footer')
-    <!-- footer section -->
+@include('partials.front.footer')
 
     @php
         $debugTheme = $activeTheme ?? $gs->theme ?? 'unknown';
@@ -110,44 +90,14 @@
     <script src="{{ asset('assets/front/js/myscript.js') }}"></script>
 
 
-    <script>
-        "use strict";
-        var mainurl = "{{ url('/') }}";
-        var gs      = {!! json_encode(DB::table('generalsettings')->where('id','=',1)->first(['is_loader','decimal_separator','thousand_separator','is_cookie','is_talkto','talkto'])) !!};
-        var ps_category = {{ $ps->category }};
-    
-        var lang = {
-            'days': '{{ __('Days') }}',
-            'hrs': '{{ __('Hrs') }}',
-            'min': '{{ __('Min') }}',
-            'sec': '{{ __('Sec') }}',
-            'cart_already': '{{ __('Already Added To Card.') }}',
-            'cart_out': '{{ __('Out Of Stock') }}',
-            'cart_success': '{{ __('Successfully Added To Cart.') }}',
-            'cart_empty': '{{ __('Cart is empty.') }}',
-            'coupon_found': '{{ __('Coupon Found.') }}',
-            'no_coupon': '{{ __('No Coupon Found.') }}',
-            'already_coupon': '{{ __('Coupon Already Applied.') }}',
-            'enter_coupon': '{{ __('Enter Coupon First') }}',
-            'minimum_qty_error': '{{ __('Minimum Quantity is:') }}',
-            'affiliate_link_copy': '{{ __('Affiliate Link Copied Successfully') }}'
-        };
-    
-      </script>
+@include('partials.global.js-globals')
+
+    <script src="{{ asset('assets/front/js/ecommerce-toggle.js') }}"></script>
 
 
 
     @php
-        if (Session::has('success')) {
-            echo '<script>
-                toastr.success("'.Session::get('success').'")
-            </script>';
-        }
-        if (Session::has('unsuccess')) {
-            echo '<script>
-                toastr.error("'.Session::get('unsuccess').'")
-            </script>';
-        }
+        echo $__env->make('partials.global.flash-toasts', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render();
     @endphp
 
       

@@ -14,6 +14,9 @@ class WalletController extends Controller
 
     public function store(Request $request)
     {
+        if (!\App\Services\CommerceState::can('wallet') || !\App\Services\CommerceState::can('orders') || !\App\Services\CommerceState::can('checkout')) {
+            return \App\Services\CommerceState::denyResponse($request, 'wallet', __('Wallet payments are currently disabled.'));
+        }
 
 
         if ($request->has('order_number')) {

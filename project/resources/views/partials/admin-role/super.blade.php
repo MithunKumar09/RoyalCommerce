@@ -325,6 +325,9 @@
         <li>
             <a href="{{ route('admin-gs-maintenance') }}"><span>{{ __('Website Maintenance') }}</span></a>
         </li>
+        <li>
+            <a href="{{ route('admin-commerce-settings') }}"><span>{{ __('Commerce Settings') }}</span></a>
+        </li>
     </ul>
 </li>
 

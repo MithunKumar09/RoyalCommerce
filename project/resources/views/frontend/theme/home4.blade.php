@@ -30,26 +30,15 @@
 @section('content')
     <div class="theme4-home">
         {{-- Category icon strip (interactive / slick) --}}
-        <section class="t4-section t4-categories">
-            <div class="container">
-                <div class="home-cate-slider t4-categories__slider">
-                    @foreach ($t4Categories as $cat)
-                        <div class="t4-cat">
-                            <a class="t4-cat__link" href="{{ $cat->slug && $cat->slug !== '#' ? route('front.category', $cat->slug) : '#' }}">
-                                <div class="t4-cat__icon">
-                                    @if (!empty($cat->image))
-                                        <img src="{{ asset('assets/images/categories/' . $cat->image) }}" alt="{{ $cat->name }}">
-                                    @else
-                                        <span aria-hidden="true"></span>
-                                    @endif
-                                </div>
-                                <div class="t4-cat__title">{{ $cat->name }}</div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
+        @include('frontend.theme4.partials.category_strip', [
+            't4Categories' => $t4Categories,
+            'sectionClass' => '',
+            'sliderClass' => 'home-cate-slider t4-categories__slider',
+            'itemClass' => '',
+            'linkClass' => '',
+            'iconClass' => '',
+            'titleClass' => '',
+        ])
 
         {{-- Hero slider (interactive / slick) --}}
         <section class="t4-section t4-hero">

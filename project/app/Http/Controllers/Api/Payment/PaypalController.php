@@ -68,6 +68,9 @@ class PaypalController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
 
         $responseData = $request->all();
         $order_number = Session::get('order_number');

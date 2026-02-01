@@ -461,6 +461,47 @@
 
     $(document).on("submit", "#geniusformdata", function (e) {
       e.preventDefault();
+      
+      // Validate category description before submit
+      var $descriptionField = $('#category-description');
+      if ($descriptionField.length) {
+        try {
+          var editor = nicEditors.findEditor('category-description');
+          var description = '';
+          
+          if (editor) {
+            description = editor.getContent();
+            // Save content to textarea
+            editor.saveContent();
+          } else {
+            description = $descriptionField.val();
+          }
+          
+          // Get plain text and trim
+          var tempDiv = $('<div>').html(description);
+          var plainText = tempDiv.text().trim();
+          
+          if (plainText.length > 2000) {
+            e.preventDefault();
+            alert('Description must not exceed 2000 characters. Current: ' + plainText.length + ' characters.');
+            $("button.addProductSubmit-btn").prop("disabled", false);
+            return false;
+          }
+          
+          // Update textarea with content
+          $descriptionField.val(description);
+        } catch (err) {
+          // If editor not found, validate textarea directly
+          var plainText = $descriptionField.val() ? $descriptionField.val().trim() : '';
+          if (plainText.length > 2000) {
+            e.preventDefault();
+            alert('Description must not exceed 2000 characters. Current: ' + plainText.length + ' characters.');
+            $("button.addProductSubmit-btn").prop("disabled", false);
+            return false;
+          }
+        }
+      }
+      
       if (admin_loader == 1) {
         $(".submit-loader").show();
       }

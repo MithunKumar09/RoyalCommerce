@@ -72,6 +72,9 @@ class StripeController extends Controller
 
     public function notify(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
         $order_number = Session::get('order_number');
         $stripe = new \Stripe\StripeClient(Config::get('services.stripe.secret'));
         $response = $stripe->checkout->sessions->retrieve($request->session_id);

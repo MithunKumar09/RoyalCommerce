@@ -163,7 +163,7 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/faqs', 'Api\Front\FrontendController@faqs');
     Route::get('/blogs', 'Api\Front\FrontendController@blogs');
     Route::get('/pages', 'Api\Front\FrontendController@pages');
-    Route::get('/ordertrack','Api\Front\FrontendController@ordertrack');
+    Route::get('/ordertrack','Api\Front\FrontendController@ordertrack')->middleware('ecommerce:order_tracking');
     Route::post('/contactmail', 'Api\Front\FrontendController@contactmail');
 
     //------------ Frontend Controller Ends ------------
@@ -199,15 +199,15 @@ Route::group(['prefix' => 'front'], function () {
 
     //------------ Checkout Controller ------------
 
-    Route::post('/checkout','Api\Front\CheckoutController@checkout');
+    Route::post('/checkout','Api\Front\CheckoutController@checkout')->middleware(['ecommerce:checkout', 'ecommerce:orders']);
    
-    Route::get('/get-shipping-packaging','Api\Front\CheckoutController@getShippingPackaging');
-    Route::get('/vendor/wise/shipping-packaging','Api\Front\CheckoutController@VendorWisegetShippingPackaging');
-    Route::get('/order/details','Api\Front\CheckoutController@orderDetails');
-    Route::get('/get/coupon-code','Api\Front\CheckoutController@getCoupon');
-    Route::post('/checkout/update/{id}','Api\Front\CheckoutController@update');
-    Route::get('/checkout/delete/{id}','Api\Front\CheckoutController@delete');
-    Route::get('/get/countries','Api\Front\CheckoutController@countries');
+    Route::get('/get-shipping-packaging','Api\Front\CheckoutController@getShippingPackaging')->middleware('ecommerce:checkout');
+    Route::get('/vendor/wise/shipping-packaging','Api\Front\CheckoutController@VendorWisegetShippingPackaging')->middleware('ecommerce:checkout');
+    Route::get('/order/details','Api\Front\CheckoutController@orderDetails')->middleware('ecommerce:checkout');
+    Route::get('/get/coupon-code','Api\Front\CheckoutController@getCoupon')->middleware('ecommerce:checkout');
+    Route::post('/checkout/update/{id}','Api\Front\CheckoutController@update')->middleware(['ecommerce:checkout', 'ecommerce:orders']);
+    Route::get('/checkout/delete/{id}','Api\Front\CheckoutController@delete')->middleware(['ecommerce:checkout', 'ecommerce:orders']);
+    Route::get('/get/countries','Api\Front\CheckoutController@countries')->middleware('ecommerce:checkout');
     //------------ Checkout Controller ------------
 
 });

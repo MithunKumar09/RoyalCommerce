@@ -1,3 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* Force global typography for admin panel (overrides admin `style.css` Open Sans) */
+html,
+body {
+  font-family: "Poppins", sans-serif !important;
+}
+
+/* Make Poppins global, but don't break icon-font elements. */
+body *:not(i):not(.fa):not(.fas):not(.far):not(.fab):not(.fal):not(.ion):not(.ionicons)
+:not([class^="icofont-"]):not([class*=" icofont-"]) {
+  font-family: "Poppins", sans-serif !important;
+}
+
+/* ------------------------------------------------------------------
+   Icon font safety locks (admin sidebar)
+   Fixes "empty square" icons when font-family/weight is overridden.
+   ------------------------------------------------------------------ */
+#sidebar i.fa,
+#sidebar i.fas,
+#sidebar i.far {
+  font-family: "Font Awesome 5 Free" !important;
+}
+#sidebar i.fab {
+  font-family: "Font Awesome 5 Brands" !important;
+}
+#sidebar i.fa,
+#sidebar i.fas {
+  font-weight: 900 !important;
+}
+#sidebar i.far {
+  font-weight: 400 !important;
+}
+#sidebar i[class^="icofont-"],
+#sidebar i[class*=" icofont-"] {
+  font-family: IcoFont !important;
+  font-weight: 400 !important;
+}
+#sidebar li a[aria-expanded="false"]::before,
+#sidebar li a[aria-expanded="true"]::before {
+  font-family: IcoFont !important;
+  font-weight: 400 !important;
+}
+
 a.btn-back {
   background: #2d3274;
   padding: 7px 15px;

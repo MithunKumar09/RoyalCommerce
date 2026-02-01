@@ -59,12 +59,14 @@ class CategoryController extends AdminBaseController
         $rules = [
             
             'slug' => 'unique:categories|regex:/^[a-zA-Z0-9\s-]+$/',
+            'description' => 'nullable|max:2000',
             'image' => 'required|mimes:jpeg,jpg,png,svg'
         ];
         $customs = [
             
             'slug.unique' => __('This slug has already been taken.'),
             'slug.regex' => __('Slug Must Not Have Any Special Characters.'),
+            'description.max' => __('Description must not exceed 2000 characters.'),
             'image.required' => __('Banner Image is required.'),
             'image.mimes' => __('Banner Image Type is Invalid.')
         ];
@@ -78,6 +80,20 @@ class CategoryController extends AdminBaseController
         //--- Logic Section
         $data = new Category();
         $input = $request->all();
+        
+        // Trim and validate description whitespace
+        if (isset($input['description'])) {
+            $input['description'] = trim($input['description']);
+            // Strip HTML tags for character count validation
+            $plainText = strip_tags($input['description']);
+            if (strlen($plainText) > 2000) {
+                return response()->json(array('errors' => ['description' => [__('Description must not exceed 2000 characters (plain text).')]]));
+            }
+            // Set to null if empty after trimming
+            if (empty($input['description']) || empty($plainText)) {
+                $input['description'] = null;
+            }
+        }
         if ($file = $request->file('photo')) {
             $name = \PriceHelper::ImageCreateName($file);
             $file->move('assets/images/categories', $name);
@@ -112,12 +128,14 @@ class CategoryController extends AdminBaseController
         $rules = [
             
             'slug' => 'unique:categories,slug,' . $id . '|regex:/^[a-zA-Z0-9\s-]+$/',
+            'description' => 'nullable|max:2000',
             'image' => 'mimes:jpeg,jpg,png,svg'
         ];
         $customs = [
             
             'slug.unique' => __('This slug has already been taken.'),
             'slug.regex' => __('Slug Must Not Have Any Special Characters.'),
+            'description.max' => __('Description must not exceed 2000 characters.'),
             'image.mimes' => __('Banner Image Type is Invalid.')
         ];
         $validator = Validator::make($request->all(), $rules, $customs);
@@ -130,6 +148,20 @@ class CategoryController extends AdminBaseController
         //--- Logic Section
         $data = Category::findOrFail($id);
         $input = $request->all();
+        
+        // Trim and validate description whitespace
+        if (isset($input['description'])) {
+            $input['description'] = trim($input['description']);
+            // Strip HTML tags for character count validation
+            $plainText = strip_tags($input['description']);
+            if (strlen($plainText) > 2000) {
+                return response()->json(array('errors' => ['description' => [__('Description must not exceed 2000 characters (plain text).')]]));
+            }
+            // Set to null if empty after trimming
+            if (empty($input['description']) || empty($plainText)) {
+                $input['description'] = null;
+            }
+        }
         if ($file = $request->file('photo')) {
             $name = \PriceHelper::ImageCreateName($file);
             $file->move('assets/images/categories', $name);

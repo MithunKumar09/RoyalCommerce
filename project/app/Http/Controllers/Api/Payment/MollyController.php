@@ -106,6 +106,9 @@ public function store(Request $request){
 
 
 public function notify(Request $request){
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
         
         $paypal_data = Session::get('paypal_data');
         $order = Order::findOrFail(Session::get('molly_data'));

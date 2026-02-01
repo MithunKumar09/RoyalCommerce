@@ -84,6 +84,9 @@ class InstamojoController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
         $input = Session::get('input_data');
         $order_data = Session::get('order_data');
         $success_url = route('front.payment.return');

@@ -37,6 +37,24 @@
                           </div>
                         </div>
 
+                        <div class="row">
+                          <div class="col-lg-4">
+                            <div class="left-area">
+                                <h4 class="heading">{{ __('Description') }}</h4>
+                                <p class="sub-heading">{{ __('(Optional - Max 2000 characters)') }}</p>
+                            </div>
+                          </div>
+                          <div class="col-lg-7">
+                            <textarea class="nic-edit" name="description" id="category-description" placeholder="{{ __('Enter Description') }}">{{ $data->description ?? '' }}</textarea>
+                            <div class="char-counter" style="margin-top: 8px; font-size: 12px; color: #6b7280;">
+                              <span id="char-count">{{ strlen(strip_tags($data->description ?? '')) }}</span> / 2000 characters
+                            </div>
+                            <div class="char-warning" style="display: none; margin-top: 4px; font-size: 12px; color: #e11d2e;">
+                              {{ __('Character limit reached!') }}
+                            </div>
+                          </div>
+                        </div>
+
                         
 
 

@@ -45,7 +45,7 @@ class ProductDetailsController extends FrontBaseController
             }
         }
 
-        $productt = Product::with('user', 'galleries')->where('slug', '=', $slug)->firstOrFail();
+        $productt = Product::with('user', 'galleries', 'mediaVideos')->where('slug', '=', $slug)->firstOrFail();
         $vendor_products = Product::where('user_id', $productt->user_id)->where('id', '!=', $productt->id)->where('status', 1)->orderBy('id', 'desc')
             ->withCount('ratings')
             ->withAvg('ratings', 'rating')

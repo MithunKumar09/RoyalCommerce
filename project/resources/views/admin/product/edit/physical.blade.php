@@ -4,6 +4,208 @@
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/select2.css') }}" rel="stylesheet" />
+    <style>
+        .apm-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+        }
+        .apm-card .card-header {
+            background: #ffffff;
+            border-bottom: 1px solid #eef2f7;
+            padding: 0;
+        }
+        .apm-header-toggle {
+            width: 100%;
+            background: transparent;
+            border: 0;
+            text-align: left;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .apm-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .apm-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .apm-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0;
+        }
+        .apm-subtitle {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .apm-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0 6px;
+        }
+        .apm-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .apm-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5f5;
+        }
+        .apm-btn.is-active {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: #fff;
+            border-color: #1e3a5f;
+            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.2);
+        }
+        .apm-btn svg {
+            color: #64748b;
+        }
+        .apm-btn.is-active svg {
+            color: #fff;
+        }
+        .apm-chevron {
+            transition: transform 0.2s ease;
+        }
+        .apm-chevron.is-rotated {
+            transform: rotate(180deg);
+        }
+        .apm-accordion .card {
+            border: 0;
+            background: transparent;
+            margin: 0;
+        }
+        .apm-accordion .card-header {
+            display: none;
+        }
+        .apm-panel {
+            background: #f8fafc;
+            border: 1px dashed #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+        .apm-footer {
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #eef2f7;
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .apm-footer svg {
+            width: 14px;
+            height: 14px;
+        }
+        .apm-media-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .apm-media-item {
+            display: flex;
+            gap: 16px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .apm-media-thumb {
+            width: 84px;
+            height: 84px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            flex-shrink: 0;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .apm-media-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .apm-media-body {
+            flex: 1;
+            min-width: 0;
+        }
+        .apm-media-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .apm-media-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .apm-media-field label {
+            display: block;
+            margin-bottom: 6px;
+        }
+        .apm-media-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .apm-media-remove {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #475569;
+        }
+        .apm-media-current {
+            font-size: 12px;
+        }
+        @media (max-width: 991px) {
+            .apm-media-item {
+                flex-direction: column;
+            }
+            .apm-media-thumb {
+                width: 100%;
+                height: 160px;
+            }
+            .apm-media-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 @endsection
 @section('content')
     <div class="content-area">
@@ -44,17 +246,45 @@
                                             style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                                         </div>
 
+                                        <div class="modal fade" id="mediaVideoPreviewModal" tabindex="-1" role="dialog" aria-labelledby="mediaVideoPreviewLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="mediaVideoPreviewLabel">{{ __('Media Preview') }}</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ __('Close') }}">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <video id="mediaVideoPreviewPlayer" controls style="width: 100%; max-height: 60vh; background: #0f172a;"></video>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="row">
                                             <div class="col-lg-12">
-                                                <div class="card">
+                                                <div class="card apm-card">
                                                     <div class="card-header" id="media-advanced-heading">
-                                                        <h5 class="mb-0">
-                                                            <button class="btn btn-link" type="button"
-                                                                data-toggle="collapse" data-target="#media-advanced-collapse"
-                                                                aria-expanded="false" aria-controls="media-advanced-collapse">
-                                                                {{ __('Advanced Product Media (Optional)') }}
-                                                            </button>
-                                                        </h5>
+                                                        <button class="apm-header-toggle" type="button"
+                                                            data-toggle="collapse" data-target="#media-advanced-collapse"
+                                                            aria-expanded="false" aria-controls="media-advanced-collapse">
+                                                            <span class="apm-header-left">
+                                                                <span class="apm-icon" aria-hidden="true">
+                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                                            stroke-linejoin="round" />
+                                                                    </svg>
+                                                                </span>
+                                                                <span>
+                                                                    <span class="apm-title">{{ __('Advanced Product Media') }}</span>
+                                                                    <span class="apm-subtitle">{{ __('Configure interactive media experiences') }}</span>
+                                                                </span>
+                                                            </span>
+                                                            <span class="apm-subtitle">{{ __('Optional') }}</span>
+                                                        </button>
                                                     </div>
                                                     <div id="media-advanced-collapse" class="collapse"
                                                         aria-labelledby="media-advanced-heading">
@@ -69,13 +299,91 @@
                                                                 $v360HasFrames = $v360Count > 0;
                                                                 $hotspotItems = isset($hotspots['items']) && is_array($hotspots['items']) ? $hotspots['items'] : [];
                                                                 $hotspotBase = isset($hotspots['target_image']) ? (string) $hotspots['target_image'] : '';
+                                                                $mediaVideos = \App\Models\ProductMediaVideo::where('product_id', $data->id)->get();
+                                                                $mediaVideoMap = [];
+                                                                foreach ($mediaVideos as $video) {
+                                                                    $mediaVideoMap[$video->target_type . ':' . (string) $video->target_id] = $video;
+                                                                }
                                                             @endphp
                                                             <div style="display:none;">
                                                                 <input type="hidden" name="media_3d_auto_rotate" value="{{ !empty($model3d['viewer']['auto_rotate']) ? 1 : 0 }}">
                                                                 <input type="hidden" name="media_3d_exposure" value="{{ isset($model3d['viewer']['exposure']) ? $model3d['viewer']['exposure'] : '' }}">
                                                                 <input type="hidden" name="media_3d_camera_orbit" value="{{ isset($model3d['viewer']['camera_orbit']) ? $model3d['viewer']['camera_orbit'] : '' }}">
                                                             </div>
-                                                            <div class="accordion" id="media-advanced-accordion">
+                                                            <div class="apm-toolbar">
+                                                                <button type="button" class="apm-btn" id="apm-btn-360"
+                                                                    data-toggle="collapse" data-target="#media-360-collapse"
+                                                                    aria-expanded="false" aria-controls="media-360-collapse">
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                                            stroke-linejoin="round" />
+                                                                    </svg>
+                                                                    <span>360°</span>
+                                                                    <svg class="apm-chevron" id="apm-chevron-360" width="14" height="14"
+                                                                        viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button type="button" class="apm-btn" id="apm-btn-hotspots"
+                                                                    data-toggle="collapse" data-target="#media-hotspot-collapse"
+                                                                    aria-expanded="false" aria-controls="media-hotspot-collapse">
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                                            stroke-linejoin="round" />
+                                                                        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                                            stroke-linejoin="round" />
+                                                                    </svg>
+                                                                    <span>{{ __('Hotspots') }}</span>
+                                                                    <svg class="apm-chevron" id="apm-chevron-hotspots" width="14" height="14"
+                                                                        viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button type="button" class="apm-btn" id="apm-btn-3d"
+                                                                    data-toggle="collapse" data-target="#media-3d-collapse"
+                                                                    aria-expanded="false" aria-controls="media-3d-collapse">
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                                            stroke-linejoin="round" />
+                                                                    </svg>
+                                                                    <span>3D</span>
+                                                                    <svg class="apm-chevron" id="apm-chevron-3d" width="14" height="14"
+                                                                        viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button type="button" class="apm-btn" id="apm-btn-media"
+                                                                    data-toggle="collapse" data-target="#media-video-collapse"
+                                                                    aria-expanded="false" aria-controls="media-video-collapse">
+                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M4 6h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"
+                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                                                                            stroke-linejoin="round" />
+                                                                    </svg>
+                                                                    <span>{{ __('Media') }}</span>
+                                                                    <svg class="apm-chevron" id="apm-chevron-media" width="14" height="14"
+                                                                        viewBox="0 0 24 24" fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                            <div class="accordion apm-accordion" id="media-advanced-accordion">
                                                                 <div class="card">
                                                                     <div class="card-header" id="media-360-heading">
                                                                         <h6 class="mb-0">
@@ -89,7 +397,7 @@
                                                                     <div id="media-360-collapse" class="collapse"
                                                                         aria-labelledby="media-360-heading"
                                                                         data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body">
+                                                                        <div class="card-body apm-panel">
                                                                             <div class="row">
                                                                                 <div class="col-lg-12">
                                                                                     <div class="checkbox-wrapper">
@@ -169,7 +477,7 @@
                                                                     <div id="media-hotspot-collapse" class="collapse"
                                                                         aria-labelledby="media-hotspot-heading"
                                                                         data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body">
+                                                                        <div class="card-body apm-panel">
                                                                             <div class="row">
                                                                                 <div class="col-lg-12">
                                                                                     <div class="checkbox-wrapper">
@@ -564,7 +872,7 @@
                                                                     <div id="media-3d-collapse" class="collapse"
                                                                         aria-labelledby="media-3d-heading"
                                                                         data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body">
+                                                                        <div class="card-body apm-panel">
                                                                             @php
                                                                                 $model3dEnabled = !empty($model3d['enabled']);
                                                                                 $model3dSrc = !empty($model3d['src']) ? (string) $model3d['src'] : '';
@@ -628,6 +936,129 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
+
+                                                                <div class="card">
+                                                                    <div class="card-header" id="media-video-heading">
+                                                                        <h6 class="mb-0">
+                                                                            <button class="btn btn-link collapsed" type="button"
+                                                                                data-toggle="collapse" data-target="#media-video-collapse"
+                                                                                aria-expanded="false" aria-controls="media-video-collapse">
+                                                                                {{ __('Media') }}
+                                                                            </button>
+                                                                        </h6>
+                                                                    </div>
+                                                                    <div id="media-video-collapse" class="collapse"
+                                                                        aria-labelledby="media-video-heading"
+                                                                        data-parent="#media-advanced-accordion">
+                                                                        <div class="card-body apm-panel">
+                                                                            @php
+                                                                                $mainImageSrc = !empty($data->photo)
+                                                                                    ? asset('assets/images/products/' . $data->photo)
+                                                                                    : asset('assets/images/noimage.png');
+                                                                                $galleryItems = $data->galleries ?? collect();
+                                                                                if (is_array($galleryItems)) {
+                                                                                    $galleryItems = collect($galleryItems);
+                                                                                }
+                                                                            @endphp
+                                                                            <div class="row">
+                                                                                <div class="col-lg-12">
+                                                                                    <div class="left-area">
+                                                                                        <h4 class="heading">{{ __('Image Videos') }}</h4>
+                                                                                        <p class="sub-heading">{{ __('(Upload a video or paste a URL per image)') }}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="apm-media-list">
+                                                                                @php
+                                                                                    $items = collect([
+                                                                                        [
+                                                                                            'key' => 'main:0',
+                                                                                            'type' => 'main',
+                                                                                            'id' => 0,
+                                                                                            'label' => __('Main Image'),
+                                                                                            'src' => $mainImageSrc,
+                                                                                        ],
+                                                                                    ]);
+                                                                                    if ($galleryItems instanceof \Illuminate\Support\Collection && $galleryItems->isNotEmpty()) {
+                                                                                        foreach ($galleryItems as $gallery) {
+                                                                                            $items->push([
+                                                                                                'key' => 'gallery:' . $gallery->id,
+                                                                                                'type' => 'gallery',
+                                                                                                'id' => $gallery->id,
+                                                                                                'label' => __('Gallery Image') . ' #' . $gallery->id,
+                                                                                                'src' => asset('assets/images/galleries/' . $gallery->photo),
+                                                                                            ]);
+                                                                                        }
+                                                                                    }
+                                                                                @endphp
+                                                                                @foreach ($items as $item)
+                                                                                    @php
+                                                                                        $video = $mediaVideoMap[$item['key']] ?? null;
+                                                                                        $videoSrc = null;
+                                                                                        $videoLabel = null;
+                                                                                        $videoUrlValue = '';
+                                                                                        if ($video) {
+                                                                                            $videoLabel = $video->source_type === 'upload' ? basename($video->video_path ?? '') : $video->video_url;
+                                                                                            $videoSrc = $video->source_type === 'upload'
+                                                                                                ? asset($video->video_path)
+                                                                                                : $video->video_url;
+                                                                                            if ($video->source_type === 'url') {
+                                                                                                $videoUrlValue = $video->video_url;
+                                                                                            }
+                                                                                        }
+                                                                                    @endphp
+                                                                                    <div class="apm-media-item">
+                                                                                        <div class="apm-media-thumb">
+                                                                                            <img src="{{ $item['src'] }}" alt="{{ $item['label'] }}">
+                                                                                        </div>
+                                                                                        <div class="apm-media-body">
+                                                                                            <div class="apm-media-title">{{ $item['label'] }}</div>
+                                                                                            <input type="hidden" name="media_video_target_type[{{ $item['key'] }}]" value="{{ $item['type'] }}">
+                                                                                            <input type="hidden" name="media_video_target_id[{{ $item['key'] }}]" value="{{ $item['id'] }}">
+                                                                                            <div class="apm-media-fields">
+                                                                                                <div class="apm-media-field">
+                                                                                                    <label class="sub-heading">{{ __('Video File') }}</label>
+                                                                                                    <input type="file" class="input-field apm-media-file"
+                                                                                                        name="media_video_file[{{ $item['key'] }}]"
+                                                                                                        accept="video/mp4,video/webm,video/ogg">
+                                                                                                    <small class="text-muted">{{ __('MP4/WebM/OGG · Max 50MB') }}</small>
+                                                                                                </div>
+                                                                                                <div class="apm-media-field">
+                                                                                                    <label class="sub-heading">{{ __('Video URL') }}</label>
+                                                                                                    <input type="text" class="input-field apm-media-url"
+                                                                                                        name="media_video_url[{{ $item['key'] }}]"
+                                                                                                        value="{{ $videoUrlValue }}"
+                                                                                                        placeholder="{{ __('https://...') }}">
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="apm-media-actions">
+                                                                                                <label class="apm-media-remove">
+                                                                                                    <input type="checkbox" name="media_video_remove[{{ $item['key'] }}]" value="1">
+                                                                                                    {{ __('Remove video') }}
+                                                                                                </label>
+                                                                                                <button type="button" class="mybtn1 apm-video-preview"
+                                                                                                    data-video-src="{{ $videoSrc ?? '' }}">
+                                                                                                    <i class="fas fa-eye"></i> {{ __('Preview') }}
+                                                                                                </button>
+                                                                                                @if ($videoLabel)
+                                                                                                    <span class="text-muted apm-media-current">{{ $videoLabel }}</span>
+                                                                                                @endif
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="apm-footer">
+                                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                                    xmlns="http://www.w3.org/2000/svg">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                                <span>{{ __('Select a media type to configure interactive product experiences') }}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1839,6 +2270,79 @@
 
 @section('scripts')
     <script type="text/javascript">
+        $(function() {
+            function syncApmState(targetId, isOpen) {
+                var btnMap = {
+                    "media-360-collapse": "#apm-btn-360",
+                    "media-hotspot-collapse": "#apm-btn-hotspots",
+                    "media-3d-collapse": "#apm-btn-3d",
+                    "media-video-collapse": "#apm-btn-media"
+                };
+                var chevMap = {
+                    "media-360-collapse": "#apm-chevron-360",
+                    "media-hotspot-collapse": "#apm-chevron-hotspots",
+                    "media-3d-collapse": "#apm-chevron-3d",
+                    "media-video-collapse": "#apm-chevron-media"
+                };
+                var btn = $(btnMap[targetId]);
+                var chev = $(chevMap[targetId]);
+                if (!btn.length) return;
+                if (isOpen) {
+                    btn.addClass("is-active");
+                    chev.addClass("is-rotated");
+                } else {
+                    btn.removeClass("is-active");
+                    chev.removeClass("is-rotated");
+                }
+            }
+
+            ["media-360-collapse", "media-hotspot-collapse", "media-3d-collapse", "media-video-collapse"].forEach(function(id) {
+                var $el = $("#" + id);
+                if ($el.length && $el.hasClass("show")) {
+                    syncApmState(id, true);
+                }
+                $el.on("show.bs.collapse", function() {
+                    syncApmState(id, true);
+                });
+                $el.on("hide.bs.collapse", function() {
+                    syncApmState(id, false);
+                });
+            });
+
+            var apmPreviewUrl = null;
+            $(document).on("click", ".apm-video-preview", function() {
+                var $item = $(this).closest(".apm-media-item");
+                var $fileInput = $item.find(".apm-media-file")[0];
+                var urlValue = $.trim($item.find(".apm-media-url").val() || "");
+                var dataSrc = $(this).data("video-src") || "";
+                var src = "";
+
+                if ($fileInput && $fileInput.files && $fileInput.files[0]) {
+                    apmPreviewUrl = URL.createObjectURL($fileInput.files[0]);
+                    src = apmPreviewUrl;
+                } else if (urlValue) {
+                    src = urlValue;
+                } else if (dataSrc) {
+                    src = dataSrc;
+                }
+
+                if (!src) {
+                    return;
+                }
+
+                $("#mediaVideoPreviewPlayer").attr("src", src);
+                $("#mediaVideoPreviewModal").modal("show");
+            });
+
+            $("#mediaVideoPreviewModal").on("hidden.bs.modal", function() {
+                $("#mediaVideoPreviewPlayer").attr("src", "");
+                if (apmPreviewUrl) {
+                    URL.revokeObjectURL(apmPreviewUrl);
+                    apmPreviewUrl = null;
+                }
+            });
+        });
+
         // Gallery Section Update
 
 

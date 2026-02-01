@@ -63,6 +63,87 @@
     //]]>
     // NIC EDITOR FULL ENDS :)
 
+    // Category Description Character Counter and Validation
+    function initCategoryDescriptionValidation() {
+      var $descriptionField = $('#category-description');
+      if (!$descriptionField.length) return;
+      
+      var $charCount = $('#char-count');
+      var $charWarning = $('.char-warning');
+      var maxChars = 2000;
+      
+      // Function to get plain text length from rich text editor
+      function getPlainTextLength() {
+        try {
+          var editor = nicEditors.findEditor('category-description');
+          if (editor) {
+            var content = editor.getContent();
+            // Strip HTML tags and get plain text length
+            var tempDiv = $('<div>').html(content);
+            var plainText = tempDiv.text().trim();
+            return plainText.length;
+          }
+        } catch (e) {
+          // Fallback to textarea value
+        }
+        return $descriptionField.val() ? $descriptionField.val().trim().length : 0;
+      }
+      
+      // Update character count
+      function updateCharCount() {
+        var currentLength = getPlainTextLength();
+        if ($charCount.length) {
+          $charCount.text(currentLength);
+          
+          if (currentLength >= maxChars) {
+            $charCount.css('color', '#e11d2e');
+            if ($charWarning.length) {
+              $charWarning.show();
+            }
+          } else {
+            $charCount.css('color', '#6b7280');
+            if ($charWarning.length) {
+              $charWarning.hide();
+            }
+          }
+        }
+      }
+      
+      // Listen for changes in NicEditor
+      setTimeout(function() {
+        try {
+          var editor = nicEditors.findEditor('category-description');
+          if (editor) {
+            // Add event listener for content changes
+            editor.addEvent('key', function() {
+              updateCharCount();
+            });
+            editor.addEvent('blur', function() {
+              updateCharCount();
+            });
+          }
+        } catch (e) {
+          console.log('NicEditor not ready yet');
+        }
+      }, 1000);
+      
+      // Initial count
+      setTimeout(function() {
+        updateCharCount();
+      }, 1500);
+      
+      // Also listen to textarea directly (fallback)
+      $descriptionField.on('input keyup', function() {
+        updateCharCount();
+      });
+    }
+
+    // Initialize category description validation after page load
+    setTimeout(function() {
+      initCategoryDescriptionValidation();
+    }, 2000);
+    // Category Description Validation Ends
+
     // Check Click :)
     $(".checkclick").on("change", function () {
       if (this.checked) {

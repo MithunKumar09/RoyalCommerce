@@ -16,6 +16,9 @@ class MercadopagoController extends Controller
 
     public function store(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
         $input = $request->all();
         if (!$request->has('order_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);

@@ -46,7 +46,7 @@
 .nice-select:after {
   /* content: url("\f078"); */
   /* content: url("/assets/images/nice-select-icon.svg"); */
-  font-family: "Font Awesome 5 Free";
+  font-family: "Font Awesome 6 Free";
   font-weight: 900;
   content: "\f078";
   position: absolute;

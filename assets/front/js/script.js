@@ -43,14 +43,108 @@ $(document).ready(function () {
   //****** 2. MOBILE MENU ******//
   const $overlay = $(".overlay");
   const $mobileMenu = $(".mobile-menu");
+  const $headerToggle = $(".header-toggle");
+  let lastMenuFocus = null;
+
+  function isSearchOpen() {
+    return $("#searchBar").hasClass("show");
+  }
+
+  function setMenuAria(isOpen, trigger) {
+    $mobileMenu.attr("aria-hidden", isOpen ? "false" : "true");
+    $headerToggle.attr("aria-expanded", isOpen ? "true" : "false");
+    if (trigger) {
+      $(trigger).attr("aria-expanded", isOpen ? "true" : "false");
+    }
+  }
+
+  function trapMenuFocus() {
+    $(document).on("keydown.mobileMenu", function (e) {
+      if (!$mobileMenu.hasClass("active")) return;
+      if (e.key === "Escape") {
+        closeMobileMenu();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const $focusable = $mobileMenu
+        .find('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        .filter(":visible");
+      if (!$focusable.length) {
+        e.preventDefault();
+        $mobileMenu.focus();
+        return;
+      }
+      const first = $focusable[0];
+      const last = $focusable[$focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  }
+
+  function releaseMenuFocus() {
+    $(document).off("keydown.mobileMenu");
+  }
+
+  function openMobileMenu(trigger) {
+    $mobileMenu.addClass("active");
+    $overlay.addClass("active");
+    $("body").addClass("mobile-menu-open");
+    lastMenuFocus = trigger || document.activeElement;
+    setMenuAria(true, trigger);
+    trapMenuFocus();
+    setTimeout(function () {
+      $mobileMenu.focus();
+    }, 0);
+  }
+
+  function closeMobileMenu(options) {
+    const opts = options || {};
+    $mobileMenu.removeClass("active");
+    $("body").removeClass("mobile-menu-open");
+    setMenuAria(false);
+    releaseMenuFocus();
+    if (!isSearchOpen()) {
+      $overlay.removeClass("active");
+    }
+    if (opts.restoreFocus !== false && lastMenuFocus && lastMenuFocus.focus) {
+      lastMenuFocus.focus();
+    }
+  }
+
+  // Close drawer instantly when crossing mobile/desktop breakpoint
+  const mqDesktop = window.matchMedia("(min-width: 1200px)");
+  let wasDesktop = mqDesktop.matches;
+
+  function handleMenuBreakpointChange() {
+    const isDesktop = mqDesktop.matches;
+    if (isDesktop !== wasDesktop) {
+      if ($mobileMenu.hasClass("active")) {
+        closeMobileMenu({ restoreFocus: false });
+      }
+      wasDesktop = isDesktop;
+    }
+  }
+
+  if (typeof mqDesktop.addEventListener === "function") {
+    mqDesktop.addEventListener("change", handleMenuBreakpointChange);
+  } else if (typeof mqDesktop.addListener === "function") {
+    mqDesktop.addListener(handleMenuBreakpointChange);
+  }
 
   $(".header-toggle").on("click", function () {
-    $mobileMenu.toggleClass("active");
-    $overlay.addClass("active");
+    if ($mobileMenu.hasClass("active")) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu(this);
+    }
   });
   $(".close").on("click", function () {
-    $mobileMenu.removeClass("active");
-    $overlay.removeClass("active");
+    closeMobileMenu();
   });
 
   //****** 3. STICKY HEADER ******//
@@ -151,7 +245,7 @@ $(document).ready(function () {
 
   // close overlay search bar and mobile menu
   $overlay.on("click", function () {
-    $mobileMenu.removeClass("active");
+    closeMobileMenu({ restoreFocus: false });
     $overlay.removeClass("active");
     $searchBar.removeClass("show");
   });
@@ -168,7 +262,7 @@ $(document).ready(function () {
   });
 
   //******  10. HOME CATE SLIDER ******//
-  $(".home-cate-slider").slick({
+  $(".home-cate-slider").not(".js-t4-cat-strip").slick({
     dots: false,
     infinite: true,
     slidesToShow: 6,
@@ -212,52 +306,118 @@ $(document).ready(function () {
     ],
   });
 
-  //******  10b. THEME 4 CATEGORY PAGE CATE STRIP (CLONE - does NOT affect home) ******//
-  // Category page uses a different slider class to avoid impacting homepage behavior.
-  const $t4CatStrip = $(".t4-cat-strip-slider");
-  if ($t4CatStrip.length && !$t4CatStrip.hasClass("slick-initialized")) {
-    $t4CatStrip.slick({
-      dots: false,
-      infinite: true,
-      slidesToShow: 6,
-      slidesToScroll: 1,
-      speed: 500,
-      autoplay: true,
-      fade: false,
-      cssEase: "linear",
-      arrows: false,
-      responsive: [
-        {
-          breakpoint: 1400,
-          settings: {
-            slidesToShow: 5,
-          },
+  //******  10b. THEME 4 CATEGORY STRIP (HOME/CATEGORY/PRODUCT) ******//
+  const t4CatStripSettings = {
+    dots: false,
+    infinite: true,
+    slidesToShow: 6,
+    slidesToScroll: 1,
+    speed: 500,
+    autoplay: true,
+    fade: false,
+    cssEase: "linear",
+    arrows: false,
+    swipe: true,
+    draggable: true,
+    touchMove: true,
+    swipeToSlide: true,
+    pauseOnHover: true,
+    pauseOnFocus: true,
+    responsive: [
+      {
+        breakpoint: 1400,
+        settings: {
+          slidesToShow: 5,
         },
-        {
-          breakpoint: 1200,
-          settings: {
-            slidesToShow: 4,
-          },
+      },
+      {
+        breakpoint: 1200,
+        settings: {
+          slidesToShow: 4,
         },
-        {
-          breakpoint: 992,
-          settings: {
-            slidesToShow: 3,
-          },
+      },
+      {
+        breakpoint: 992,
+        settings: {
+          slidesToShow: 3,
         },
-        {
-          breakpoint: 768,
-          settings: {
-            slidesToShow: 2,
-          },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 2,
         },
-        {
-          breakpoint: 425,
-          settings: {
-            slidesToShow: 1,
-          },
+      },
+      {
+        breakpoint: 425,
+        settings: {
+          slidesToShow: 1,
         },
-      ],
+      },
+    ],
+  };
+
+  function bindT4CatStripInteractions($strip, index) {
+    const ns = ".t4catstrip" + index;
+    let resumeTimer = null;
+    let wheelLock = false;
+
+    function pauseAuto() {
+      if ($strip.hasClass("slick-initialized")) {
+        $strip.slick("slickPause");
+      }
+    }
+
+    function scheduleResume() {
+      if (!$strip.hasClass("slick-initialized")) return;
+      if ($strip.is(":hover")) return;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(function () {
+        $strip.slick("slickPlay");
+      }, 1200);
+    }
+
+    $strip.on("mousedown" + ns + " touchstart" + ns + " pointerdown" + ns, function () {
+      pauseAuto();
+    });
+
+    $(document).on(
+      "mouseup" + ns + " touchend" + ns + " pointerup" + ns + " touchcancel" + ns + " pointercancel" + ns,
+      function (e) {
+        if ($strip.is(e.target) || $(e.target).closest($strip).length) {
+          scheduleResume();
+        }
+      }
+    );
+
+    $strip.on("wheel" + ns, function (e) {
+      const oe = e.originalEvent || e;
+      const deltaY = oe.deltaY || 0;
+      const deltaX = oe.deltaX || 0;
+      if (!deltaY && !deltaX) return;
+      if (Math.abs(deltaY) < Math.abs(deltaX)) return;
+      if (wheelLock) return;
+      wheelLock = true;
+      if (deltaY > 0) {
+        $strip.slick("slickNext");
+      } else {
+        $strip.slick("slickPrev");
+      }
+      pauseAuto();
+      scheduleResume();
+      setTimeout(function () {
+        wheelLock = false;
+      }, 250);
+    });
+  }
+
+  const $t4CatStrips = $(".js-t4-cat-strip");
+  if ($t4CatStrips.length) {
+    $t4CatStrips.each(function (i) {
+      const $strip = $(this);
+      if ($strip.hasClass("slick-initialized")) return;
+      $strip.slick(t4CatStripSettings);
+      bindT4CatStripInteractions($strip, i);
     });
   }
   $(".home3-cate-slider").slick({

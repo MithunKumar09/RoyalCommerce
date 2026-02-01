@@ -70,6 +70,9 @@ class InstamojoController extends Controller
 
     public function notify(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
 
         $data = $request->all();
 

@@ -119,6 +119,9 @@ class RazorpayController extends Controller
 
     public function razorCallback(Request $request)
     {
+        if (!\App\Services\CommerceState::can('checkout') || !\App\Services\CommerceState::can('orders')) {
+            return \App\Services\CommerceState::denyResponse($request, 'orders', __('Ordering is currently disabled.'));
+        }
 
         $success = true;
         $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));

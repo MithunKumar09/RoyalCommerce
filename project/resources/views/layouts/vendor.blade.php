@@ -8,11 +8,11 @@
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/icofont.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">

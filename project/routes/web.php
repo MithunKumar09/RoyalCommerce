@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 Route::get('/under-maintenance', 'Front\FrontendController@maintenance')->name('front-maintenance');
 
+// Global commerce state endpoints (public read-only)
+Route::get('/ecommerce/state', 'Front\EcommerceStateController@show')->name('ecommerce.state');
+Route::get('/ecommerce/stream', 'Front\EcommerceStreamController@stream')->name('ecommerce.stream');
+
 Route::prefix('admin')->group(function () {
 
     //------------ ADMIN LOGIN SECTION ------------
@@ -92,18 +96,18 @@ Route::prefix('admin')->group(function () {
 
         // CREATE ORDER
 
-        Route::get('/order/product/datatables', 'Admin\OrderCreateController@datatables')->name('admin-order-product-datatables'); //JSON REQUEST
-        Route::get('/order/create', 'Admin\OrderCreateController@create')->name('admin-order-create');
-        Route::get('/order/product/add/{product_id}', 'Admin\OrderCreateController@addProduct')->name('admin-order-product-add');
-        Route::get('/order/product/add', 'Admin\OrderCreateController@orderStore')->name('admin.order.store.new');
-        Route::get('/order/product/remove/{product_id}', 'Admin\OrderCreateController@removeOrderProduct')->name('admin.order.product.remove');
-        Route::get('/order/create/product-show/{id}', 'Admin\OrderCreateController@product_show');
-        Route::get('/order/create/addcart/{id}', 'Admin\OrderCreateController@addcart');
-        Route::get('/order/remove/addcart/{id}', 'Admin\OrderCreateController@removeCart')->name('admin.order.remove.cart');
-        Route::get('/order/create/user-address', 'Admin\OrderCreateController@userAddress');
-        Route::post('/order/create/user-address', 'Admin\OrderCreateController@userAddressSubmit')->name('admin.order.create.user.address');
-        Route::post('/order/create/order/view', 'Admin\OrderCreateController@viewCreateOrder')->name('admin.order.create.view');
-        Route::get('/order/create/order/submit', 'Admin\OrderCreateController@CreateOrderSubmit')->name('admin-order-create-submit');
+        Route::get('/order/product/datatables', 'Admin\OrderCreateController@datatables')->middleware('ecommerce:orders')->name('admin-order-product-datatables'); //JSON REQUEST
+        Route::get('/order/create', 'Admin\OrderCreateController@create')->middleware('ecommerce:orders')->name('admin-order-create');
+        Route::get('/order/product/add/{product_id}', 'Admin\OrderCreateController@addProduct')->middleware('ecommerce:orders')->name('admin-order-product-add');
+        Route::get('/order/product/add', 'Admin\OrderCreateController@orderStore')->middleware('ecommerce:orders')->name('admin.order.store.new');
+        Route::get('/order/product/remove/{product_id}', 'Admin\OrderCreateController@removeOrderProduct')->middleware('ecommerce:orders')->name('admin.order.product.remove');
+        Route::get('/order/create/product-show/{id}', 'Admin\OrderCreateController@product_show')->middleware('ecommerce:orders');
+        Route::get('/order/create/addcart/{id}', 'Admin\OrderCreateController@addcart')->middleware('ecommerce:orders');
+        Route::get('/order/remove/addcart/{id}', 'Admin\OrderCreateController@removeCart')->middleware('ecommerce:orders')->name('admin.order.remove.cart');
+        Route::get('/order/create/user-address', 'Admin\OrderCreateController@userAddress')->middleware('ecommerce:orders');
+        Route::post('/order/create/user-address', 'Admin\OrderCreateController@userAddressSubmit')->middleware('ecommerce:orders')->name('admin.order.create.user.address');
+        Route::post('/order/create/order/view', 'Admin\OrderCreateController@viewCreateOrder')->middleware('ecommerce:orders')->name('admin.order.create.view');
+        Route::get('/order/create/order/submit', 'Admin\OrderCreateController@CreateOrderSubmit')->middleware('ecommerce:orders')->name('admin-order-create-submit');
 
         Route::get('/order/{id}/track', 'Admin\OrderTrackController@index')->name('admin-order-track');
         Route::get('/order/{id}/trackload', 'Admin\OrderTrackController@load')->name('admin-order-track-load');
@@ -908,6 +912,14 @@ Route::prefix('admin')->group(function () {
     Route::post('/general-settings/update/mail', 'Admin\GeneralSettingController@generalMailUpdate')->name('admin-gs-update-mail');
     Route::get('/general-settings/status/{field}/{status}', 'Admin\GeneralSettingController@status')->name('admin-gs-status');
 
+    // Commerce enable/disable (global)
+    // TEMP: allow Admins who already have General Settings access.
+    // FUTURE: move back to `permissions:super` when SuperAdmin-only is desired.
+    Route::group(['middleware' => 'permissions:general_settings'], function () {
+        Route::get('/commerce-settings', 'Admin\CommerceSettingController@index')->name('admin-commerce-settings');
+        Route::post('/commerce-settings', 'Admin\CommerceSettingController@update')->name('admin-commerce-settings-update');
+    });
+
     // STATUS SECTION
     Route::get('/products/status/{id1}/{id2}', 'Admin\ProductController@status')->name('admin-prod-status');
     // STATUS SECTION ENDS
@@ -1254,8 +1266,12 @@ Route::group(['middleware' => 'maintenance'], function () {
         // User Orders
 
         Route::get('/orders', 'User\OrderController@orders')->name('user-orders');
-        Route::get('/order/tracking', 'User\OrderController@ordertrack')->name('user-order-track');
-        Route::get('/order/trackings/{id}', 'User\OrderController@trackload')->name('user-order-track-search');
+        Route::get('/order/tracking', 'User\OrderController@ordertrack')
+            ->middleware('ecommerce:order_tracking')
+            ->name('user-order-track');
+        Route::get('/order/trackings/{id}', 'User\OrderController@trackload')
+            ->middleware('ecommerce:order_tracking')
+            ->name('user-order-track-search');
         Route::get('/order/{id}', 'User\OrderController@order')->name('user-order');
         Route::get('/download/order/{slug}/{id}', 'User\OrderController@orderdownload')->name('user-order-download');
         Route::get('print/order/print/{id}', 'User\OrderController@orderprint')->name('user-order-print');
@@ -1531,7 +1547,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/currency/{id}', 'Front\FrontendController@currency')->name('front.currency');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');
-    Route::get('/order/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
+    Route::get('/order/track/{id}', 'Front\FrontendController@trackload')
+        ->middleware('ecommerce:order_tracking')
+        ->name('front.track.search');
     // BLOG SECTION
     Route::get('/blog', 'Front\FrontendController@blog')->name('front.blog');
     Route::get('/blog/{slug}', 'Front\FrontendController@blogshow')->name('front.blogshow');
@@ -1595,14 +1613,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     // CART SECTION
     Route::get('/carts/view', 'Front\CartController@cartview');
     Route::get('/carts', 'Front\CartController@cart')->name('front.cart');
-    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('product.cart.add');
-    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('product.cart.quickadd');
-    Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');
-    Route::get('/addtonumcart', 'Front\CartController@addtonumcart');
-    Route::get('/addbyone', 'Front\CartController@addbyone');
-    Route::get('/reducebyone', 'Front\CartController@reducebyone');
-    Route::get('/upcolor', 'Front\CartController@upcolor');
-    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('product.cart.remove');
+    Route::get('/addcart/{id}', 'Front\CartController@addcart')->middleware('ecommerce:cart')->name('product.cart.add');
+    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->middleware('ecommerce:cart')->name('product.cart.quickadd');
+    Route::get('/addnumcart', 'Front\CartController@addnumcart')->middleware('ecommerce:cart')->name('details.cart');
+    Route::get('/addtonumcart', 'Front\CartController@addtonumcart')->middleware('ecommerce:cart');
+    Route::get('/addbyone', 'Front\CartController@addbyone')->middleware('ecommerce:cart');
+    Route::get('/reducebyone', 'Front\CartController@reducebyone')->middleware('ecommerce:cart');
+    Route::get('/upcolor', 'Front\CartController@upcolor')->middleware('ecommerce:cart');
+    Route::get('/removecart/{id}', 'Front\CartController@removecart')->middleware('ecommerce:cart')->name('product.cart.remove');
     Route::get('/carts/coupon', 'Front\CouponController@coupon');
     // CART SECTION ENDS
 
@@ -1613,73 +1631,77 @@ Route::group(['middleware' => 'maintenance'], function () {
     // COMPARE SECTION ENDS
 
     // CHECKOUT SECTION
-    Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');
+    Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->middleware('ecommerce:checkout')->name('front.buynow');
     // Checkout
-    Route::get('/checkout', 'Front\CheckoutController@checkout')->name('front.checkout');
-    Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->name('front.checkout.step1.submit');
+    Route::get('/checkout', 'Front\CheckoutController@checkout')->middleware('ecommerce:checkout')->name('front.checkout');
+    Route::post('/checkout/step1/submit', 'Front\CheckoutController@checkoutStep1')->middleware('ecommerce:checkout')->name('front.checkout.step1.submit');
 
-    Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->name('front.checkout.step2');
-    Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->name('front.checkout.step2.submit');
+    Route::get('/checkout/step2', 'Front\CheckoutController@checkoutstep2')->middleware('ecommerce:checkout')->name('front.checkout.step2');
+    Route::post('/checkout/step2/submit', 'Front\CheckoutController@checkoutStep2Submit')->middleware('ecommerce:checkout')->name('front.checkout.step2.submit');
 
-    Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->name('front.checkout.step3');
+    Route::get('/checkout/step3', 'Front\CheckoutController@checkoutstep3')->middleware('ecommerce:checkout')->name('front.checkout.step3');
 
-    Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->name('front.coupon.check');
-    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
+    Route::get('/carts/coupon/check', 'Front\CouponController@couponcheck')->middleware('ecommerce:checkout')->name('front.coupon.check');
+    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->middleware('ecommerce:checkout')->name('front.load.payment');
     Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
     Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
-    Route::get('/checkout/payment/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.wallet.check');
+    Route::get('/checkout/payment/wallet-check', 'Front\CheckoutController@walletcheck')
+        ->middleware(['ecommerce:checkout', 'ecommerce:wallet'])
+        ->name('front.wallet.check');
 
     // Paypal
-    Route::post('/checkout/payment/paypal/submit', 'Payment\Checkout\PaypalController@store')->name('front.paypal.submit');
+    Route::post('/checkout/payment/paypal/submit', 'Payment\Checkout\PaypalController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.paypal.submit');
     Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
 
     // Stripe
-    Route::post('/checkout/payment/stripe-submit', 'Payment\Checkout\StripeController@store')->name('front.stripe.submit');
+    Route::post('/checkout/payment/stripe-submit', 'Payment\Checkout\StripeController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.stripe.submit');
     Route::get('/payment/stripe/notify', 'Payment\Checkout\StripeController@notify')->name('front.stripe.notify');
 
     // Instamojo
-    Route::post('/checkout/payment/instamojo-submit', 'Payment\Checkout\InstamojoController@store')->name('front.instamojo.submit');
+    Route::post('/checkout/payment/instamojo-submit', 'Payment\Checkout\InstamojoController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.instamojo.submit');
     Route::get('/checkout/payment/instamojo-notify', 'Payment\Checkout\InstamojoController@notify')->name('front.instamojo.notify');
 
     // Paystack
-    Route::post('/checkout/payment/paystack-submit', 'Payment\Checkout\PaystackController@store')->name('front.paystack.submit');
+    Route::post('/checkout/payment/paystack-submit', 'Payment\Checkout\PaystackController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.paystack.submit');
 
     // PayTM
-    Route::post('/checkout/payment/paytm-submit', 'Payment\Checkout\PaytmController@store')->name('front.paytm.submit');;
+    Route::post('/checkout/payment/paytm-submit', 'Payment\Checkout\PaytmController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.paytm.submit');;
     Route::post('/checkout/payment/paytm-notify', 'Payment\Checkout\PaytmController@notify')->name('front.paytm.notify');
 
     // Molly
-    Route::post('/checkout/payment/molly-submit', 'Payment\Checkout\MollieController@store')->name('front.molly.submit');
+    Route::post('/checkout/payment/molly-submit', 'Payment\Checkout\MollieController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.molly.submit');
     Route::get('/checkout/payment/molly-notify', 'Payment\Checkout\MollieController@notify')->name('front.molly.notify');
 
     // RazorPay
-    Route::post('/checkout/payment/razorpay-submit', 'Payment\Checkout\RazorpayController@store')->name('front.razorpay.submit');
+    Route::post('/checkout/payment/razorpay-submit', 'Payment\Checkout\RazorpayController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.razorpay.submit');
     Route::post('/checkout/payment/razorpay-notify', 'Payment\Checkout\RazorpayController@notify')->name('front.razorpay.notify');
 
     // Authorize.Net
-    Route::post('/checkout/payment/authorize-submit', 'Payment\Checkout\AuthorizeController@store')->name('front.authorize.submit');
+    Route::post('/checkout/payment/authorize-submit', 'Payment\Checkout\AuthorizeController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.authorize.submit');
 
     // Mercadopago
-    Route::post('/checkout/payment/mercadopago-submit', 'Payment\Checkout\MercadopagoController@store')->name('front.mercadopago.submit');
+    Route::post('/checkout/payment/mercadopago-submit', 'Payment\Checkout\MercadopagoController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.mercadopago.submit');
 
     // Flutter Wave
-    Route::post('/checkout/payment/flutter-submit', 'Payment\Checkout\FlutterwaveController@store')->name('front.flutter.submit');
+    Route::post('/checkout/payment/flutter-submit', 'Payment\Checkout\FlutterwaveController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.flutter.submit');
 
     // SSLCommerz
-    Route::post('/checkout/payment/ssl-submit', 'Payment\Checkout\SslController@store')->name('front.ssl.submit');
+    Route::post('/checkout/payment/ssl-submit', 'Payment\Checkout\SslController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.ssl.submit');
     Route::post('/checkout/payment/ssl-notify', 'Payment\Checkout\SslController@notify')->name('front.ssl.notify');
 
     // Voguepay
-    Route::post('/checkout/payment/voguepay-submit', 'Payment\Checkout\VoguepayController@store')->name('front.voguepay.submit');
+    Route::post('/checkout/payment/voguepay-submit', 'Payment\Checkout\VoguepayController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.voguepay.submit');
 
     // Wallet
-    Route::post('/checkout/payment/wallet-submit', 'Payment\Checkout\WalletPaymentController@store')->name('front.wallet.submit');
+    Route::post('/checkout/payment/wallet-submit', 'Payment\Checkout\WalletPaymentController@store')
+        ->middleware(['ecommerce:checkout', 'ecommerce:orders', 'ecommerce:wallet'])
+        ->name('front.wallet.submit');
 
     // Manual
-    Route::post('/checkout/payment/manual-submit', 'Payment\Checkout\ManualPaymentController@store')->name('front.manual.submit');
+    Route::post('/checkout/payment/manual-submit', 'Payment\Checkout\ManualPaymentController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.manual.submit');
 
     // Cash On Delivery
-    Route::post('/checkout/payment/cod-submit', 'Payment\Checkout\CashOnDeliveryController@store')->name('front.cod.submit');
+    Route::post('/checkout/payment/cod-submit', 'Payment\Checkout\CashOnDeliveryController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('front.cod.submit');
 
     // Flutterwave Notify Routes
 
@@ -1696,26 +1718,26 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     //   Mobile Checkout section
 
-    Route::get('/payment/checkout', 'Api\Payment\CheckoutController@checkout')->name('payment.checkout');
-    Route::post('/payment/stripe-submit', 'Api\Payment\StripeController@store')->name('payment.stripe');
+    Route::get('/payment/checkout', 'Api\Payment\CheckoutController@checkout')->middleware('ecommerce:checkout')->name('payment.checkout');
+    Route::post('/payment/stripe-submit', 'Api\Payment\StripeController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('payment.stripe');
     Route::get('/payment/stripe-notify', 'Api\Payment\StripeController@notify')->name('payment.notify');
 
     Route::get('/deposit/app/payment/{slug1}/{slug2}', 'Api\Payment\CheckoutController@depositloadpayment')->name('deposit.app.payment');
 
-    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
+    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->middleware('ecommerce:checkout')->name('front.load.payment');
 
     Route::post('/api/flutter/submit', 'Payment\FlutterWaveController@store')->name('api.flutter.submit');
     Route::post('/flutter/notify', 'Payment\FlutterWaveController@notify')->name('api.flutter.notify');
 
     Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');
 
-    Route::post('/api/cod/submit', 'Api\Payment\CashOnDeliveryController@store')->name('api.cod.submit');
-    Route::post('/api/wallet/submit', 'Api\Payment\WalletController@store')->name('api.wallet.submit');
-    Route::post('/api/manual/submit', 'Api\Payment\ManualController@store')->name('api.manual.submit');
+    Route::post('/api/cod/submit', 'Api\Payment\CashOnDeliveryController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('api.cod.submit');
+    Route::post('/api/wallet/submit', 'Api\Payment\WalletController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders', 'ecommerce:wallet'])->name('api.wallet.submit');
+    Route::post('/api/manual/submit', 'Api\Payment\ManualController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('api.manual.submit');
 
-    Route::post('/api/paystack/submit', 'Api\Payment\PaystackController@store')->name('api.paystack.submit');
+    Route::post('/api/paystack/submit', 'Api\Payment\PaystackController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('api.paystack.submit');
 
-    Route::post('/api/instamojo/submit', 'Api\Payment\InstamojoController@store')->name('api.instamojo.submit');
+    Route::post('/api/instamojo/submit', 'Api\Payment\InstamojoController@store')->middleware(['ecommerce:checkout', 'ecommerce:orders'])->name('api.instamojo.submit');
 
     Route::get('/api/checkout/instamojo/notify', 'Api\Payment\InstamojoController@notify')->name('api.instamojo.notify');
 

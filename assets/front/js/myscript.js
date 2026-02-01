@@ -1,6 +1,77 @@
 (function ($) {
   "use strict";
 
+  function commerceState() {
+    return window.Commerce && typeof window.Commerce.state === "function"
+      ? window.Commerce.state()
+      : null;
+  }
+
+  function commerceCan(capability) {
+    if (!window.Commerce || typeof window.Commerce.can !== "function") return true;
+    return !!window.Commerce.can(capability);
+  }
+
+  function commerceWhatsAppMessage(actionLabel) {
+    if (window.Commerce && typeof window.Commerce.buildWhatsAppMessage === "function") {
+      return window.Commerce.buildWhatsAppMessage(actionLabel);
+    }
+    var lines = [];
+    if (actionLabel) lines.push(String(actionLabel));
+
+    // Best-effort: mirrors the same selectors used for add-to-cart payload.
+    var pid = $("#product_id").val();
+    var qty = $("#order-qty").val();
+    var size = $(".cart_size input:checked").attr("data-key") || $(".cart_size input:checked").val();
+    var color = $(".cart_color input:checked").attr("data-color") || $(".cart_color input:checked").val();
+
+    if (pid) lines.push("Product ID: " + pid);
+    if (qty) lines.push("Qty: " + qty);
+    if (size) lines.push("Size: " + size);
+    if (color) lines.push("Color: " + color);
+
+    var attrs = $(".cart_attr:checked")
+      .map(function () {
+        var k = $(this).attr("data-key");
+        var v = $(this).val();
+        return k && v ? k + ": " + v : null;
+      })
+      .get()
+      .filter(Boolean);
+    if (attrs && attrs.length) lines = lines.concat(attrs);
+
+    lines.push(document.title);
+    lines.push(window.location.href);
+    return lines.filter(Boolean).join("\n");
+  }
+
+  function commerceBlocked(actionLabel) {
+    var st = commerceState();
+    var mode = st && st.mode ? st.mode : "enabled";
+    var msg =
+      mode === "disabled"
+        ? "Store is temporarily unavailable."
+        : mode === "whatsapp_only"
+          ? "Ordering is available via WhatsApp."
+          : "This feature is temporarily unavailable.";
+
+    // WhatsApp-only: open WhatsApp chat (best-effort) instead of failing silently.
+    if (mode === "whatsapp_only" && window.Commerce && typeof window.Commerce.whatsappLink === "function") {
+      var wa = window.Commerce.whatsappLink(commerceWhatsAppMessage(actionLabel || "Order request"));
+      if (wa) {
+        window.open(wa, "_blank", "noopener");
+        return true;
+      }
+    }
+
+    if (window.toastr) {
+      toastr.error(msg);
+    } else {
+      alert(msg);
+    }
+    return true;
+  }
+
   //   wishlist
   $(document).on("click", ".wishlist", function (e) {
     e.preventDefault();
@@ -99,6 +170,11 @@
 
   // add to card
   $(document).on("click", ".add_cart_click", function (e) {
+    if (!commerceCan("cart")) {
+      e.preventDefault();
+      commerceBlocked("Add to cart");
+      return false;
+    }
     e.preventDefault();
     $.get($(this).attr("data-href"), function (data) {
       if (data == "digital") {
@@ -117,6 +193,10 @@
   });
 
   $(document).on("click", ".quantity-up", function () {
+    if (!commerceCan("cart")) {
+      commerceBlocked("Update cart quantity");
+      return false;
+    }
     var pid = $(this).parent().find(".prodid").val();
     var itemid = $(this).parent().find(".itemid").val();
     var size_qty = $(this).parent().find(".size_qty").val();
@@ -163,6 +243,10 @@
   });
 
   $(document).on("click", ".quantity-down", function () {
+    if (!commerceCan("cart")) {
+      commerceBlocked("Update cart quantity");
+      return false;
+    }
     var pid = $(this).siblings(".prodid").val();
     var itemid = $(this).siblings(".itemid").val();
     var size_qty = $(this).siblings(".size_qty").val();
@@ -249,6 +333,11 @@
   }
 
   $(document).on("click", "#addtodetailscart", function (e) {
+    if (!commerceCan("cart")) {
+      e.preventDefault();
+      commerceBlocked("Add to cart");
+      return false;
+    }
     let pid = "";
     let qty = "";
     let size_key = "";
@@ -323,6 +412,10 @@
   });
 
   $(document).on("click", "#addtobycard", function () {
+    if (!commerceCan("cart")) {
+      commerceBlocked("Add to cart");
+      return false;
+    }
     let pid = "";
     let qty = "";
     let size_key = "";

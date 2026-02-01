@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\PriceHelper;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Category;
 use App\Models\Childcategory;
 use App\Models\Currency;
 use App\Models\Gallery;
+use App\Models\ProductMediaVideo;
 use App\Models\Product;
 use App\Models\Subcategory;
-use Datatables;use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Image;
+use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Log;
-use Validator;
+use Yajra\DataTables\Facades\DataTables as Datatables;
 
 class ProductController extends AdminBaseController
 {
@@ -38,7 +41,7 @@ class ProductController extends AdminBaseController
             })
             ->editColumn('price', function (Product $data) {
                 $price = $data->price * $this->curr->value;
-                return \PriceHelper::showAdminCurrencyPrice($price);
+                return PriceHelper::showAdminCurrencyPrice($price);
             })
             ->editColumn('photo', function (Product $data) {
                 $photo = $data->photo ? asset('assets/images/products/' . $data->photo) : asset('assets/images/noimage.png');
@@ -84,7 +87,7 @@ class ProductController extends AdminBaseController
             })
             ->editColumn('price', function (Product $data) {
                 $price = $data->price * $this->curr->value;
-                return \PriceHelper::showAdminCurrencyPrice($price);
+                return PriceHelper::showAdminCurrencyPrice($price);
             })
             ->editColumn('stock', function (Product $data) {
                 $stck = (string) $data->stock;
@@ -366,8 +369,11 @@ class ProductController extends AdminBaseController
         natsort($frames);
         $frames = array_values($frames);
 
+        // IMPORTANT (production-safe):
+        // Store RELATIVE URLs in manifest.json (avoid `asset()` which depends on APP_URL and can
+        // accidentally generate "/RoyalCommerce/..." on production).
         $frameUrls = array_map(function ($file) use ($id) {
-            return asset('assets/products_media/' . $id . '/360/frames/' . $file);
+            return '/assets/products_media/' . $id . '/360/frames/' . $file;
         }, $frames);
 
         $manifestPayload = $existingManifest;
@@ -395,8 +401,9 @@ class ProductController extends AdminBaseController
         natsort($frames);
         $frames = array_values($frames);
 
+        // IMPORTANT (production-safe): write relative URLs to avoid APP_URL path prefixes.
         $frameUrls = array_map(function ($file) use ($id) {
-            return asset('assets/products_media/' . $id . '/360/frames/' . $file);
+            return '/assets/products_media/' . $id . '/360/frames/' . $file;
         }, $frames);
 
         $manifestPath = $framesPath . DIRECTORY_SEPARATOR . 'manifest.json';
@@ -477,7 +484,7 @@ class ProductController extends AdminBaseController
 
         // Check File
         if ($file = $request->file('file')) {
-            $name = time() . \Str::random(8) . str_replace(' ', '', $file->getClientOriginalExtension());
+            $name = time() . Str::random(8) . str_replace(' ', '', $file->getClientOriginalExtension());
             $file->move('assets/files', $name);
             $input['file'] = $name;
         }
@@ -704,7 +711,7 @@ class ProductController extends AdminBaseController
             foreach ($files as $key => $file) {
                 if (in_array($key, $request->galval)) {
                     $gallery = new Gallery;
-                    $name = time() . \Str::random(8) . str_replace(' ', '', $file->getClientOriginalExtension());
+                    $name = time() . Str::random(8) . str_replace(' ', '', $file->getClientOriginalExtension());
                     $file->move('assets/images/galleries', $name);
                     $gallery['photo'] = $name;
                     $gallery['product_id'] = $lastid;
@@ -904,6 +911,8 @@ class ProductController extends AdminBaseController
             // We validate as a file + max size here, and enforce the extension safely
             // in the dedicated 3D handling block below.
             'media_3d_model' => 'nullable|file|max:51200',
+            'media_video_file.*' => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+            'media_video_url.*' => 'nullable|url|max:2048',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -1483,6 +1492,96 @@ class ProductController extends AdminBaseController
                 ],
             ];
             $input['media_extra'] = json_encode($mediaExtra);
+        }
+
+        $videoTargets = $request->input('media_video_target_type', []);
+        if (is_array($videoTargets) && !empty($videoTargets)) {
+            $videoTargetIds = $request->input('media_video_target_id', []);
+            $videoUrls = $request->input('media_video_url', []);
+            $videoRemoves = $request->input('media_video_remove', []);
+            $videoFiles = $request->file('media_video_file', []);
+            $existingVideos = ProductMediaVideo::where('product_id', $data->id)->get()->keyBy(function ($video) {
+                return $video->target_type . ':' . (string) $video->target_id;
+            });
+            $uploadDir = public_path('assets/products_media/' . $data->id . '/videos');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            foreach ($videoTargets as $key => $targetType) {
+                $targetId = isset($videoTargetIds[$key]) ? (int) $videoTargetIds[$key] : 0;
+                $targetKey = $targetType . ':' . (string) $targetId;
+                $existing = $existingVideos->get($targetKey);
+                $remove = isset($videoRemoves[$key]);
+                $file = $videoFiles[$key] ?? null;
+                $url = isset($videoUrls[$key]) ? trim((string) $videoUrls[$key]) : '';
+
+                if ($remove) {
+                    if ($existing && !empty($existing->video_path)) {
+                        $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
+                        $oldFile = public_path(ltrim($oldPath, '/'));
+                        if (file_exists($oldFile)) {
+                            unlink($oldFile);
+                        }
+                    }
+                    if ($existing) {
+                        $existing->delete();
+                    }
+                    continue;
+                }
+
+                if ($file) {
+                    $ext = strtolower($file->getClientOriginalExtension());
+                    if (!in_array($ext, ['mp4', 'webm', 'ogg'])) {
+                        return response()->json(array('errors' => ['media_video_file' => __("Only MP4, WebM, or OGG videos are allowed.")]));
+                    }
+                    if ($existing && !empty($existing->video_path)) {
+                        $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
+                        $oldFile = public_path(ltrim($oldPath, '/'));
+                        if (file_exists($oldFile)) {
+                            unlink($oldFile);
+                        }
+                    }
+                    $fileName = 'video_' . $targetType . '_' . $targetId . '_' . time() . '_' . Str::random(6) . '.' . $ext;
+                    $file->move($uploadDir, $fileName);
+                    $path = 'assets/products_media/' . $data->id . '/videos/' . $fileName;
+                    ProductMediaVideo::updateOrCreate(
+                        [
+                            'product_id' => $data->id,
+                            'target_type' => $targetType,
+                            'target_id' => $targetId,
+                        ],
+                        [
+                            'source_type' => 'upload',
+                            'video_path' => $path,
+                            'video_url' => null,
+                        ]
+                    );
+                    continue;
+                }
+
+                if ($url !== '') {
+                    if ($existing && !empty($existing->video_path)) {
+                        $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
+                        $oldFile = public_path(ltrim($oldPath, '/'));
+                        if (file_exists($oldFile)) {
+                            unlink($oldFile);
+                        }
+                    }
+                    ProductMediaVideo::updateOrCreate(
+                        [
+                            'product_id' => $data->id,
+                            'target_type' => $targetType,
+                            'target_id' => $targetId,
+                        ],
+                        [
+                            'source_type' => 'url',
+                            'video_path' => null,
+                            'video_url' => $url,
+                        ]
+                    );
+                }
+            }
         }
 
         $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);

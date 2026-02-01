@@ -49,6 +49,11 @@ class Product extends Model
         return $this->hasMany('App\Models\Gallery');
     }
 
+    public function mediaVideos()
+    {
+        return $this->hasMany('App\Models\ProductMediaVideo');
+    }
+
     public function ratings()
     {
         return $this->hasMany('App\Models\Rating');
