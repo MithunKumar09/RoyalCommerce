@@ -210,6 +210,9 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/get/countries','Api\Front\CheckoutController@countries')->middleware('ecommerce:checkout');
     //------------ Checkout Controller ------------
 
+    Route::post('/rfq-submit', [RfqController::class, 'submit'])->name('rfq.submit');
+
+
 });
 
 Route::fallback(function () {

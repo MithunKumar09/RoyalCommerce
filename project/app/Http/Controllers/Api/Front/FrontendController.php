@@ -1,3 +1,4 @@
+<!-- app/Http/Controllers/Api/Font/FrontendController.php -->
 <?php
 
 namespace App\Http\Controllers\Api\Front;

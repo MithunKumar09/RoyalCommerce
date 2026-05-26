@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Faq;
 
 class ProductDetailsController extends FrontBaseController
 {
@@ -62,9 +63,29 @@ class ProductDetailsController extends FrontBaseController
         $product_click = new ProductClick;
         $product_click->product_id = $productt->id;
         $product_click->date = Carbon::now()->format('Y-m-d');
-        $product_click->save();
+$product_click->save();
 
-        return view('frontend.product', compact('productt', 'curr', 'affilate_user', 'vendor_products'));
+/*
+|--------------------------------------------------------------------------
+| Product FAQ Logic (GLOBAL + PRODUCT-SPECIFIC)
+|--------------------------------------------------------------------------
+*/
+$productFaqs = Faq::where(function ($q) use ($productt) {
+        $q->whereNull('product_id')          // Global FAQs
+          ->orWhere('product_id', $productt->id); // Product-specific FAQs
+    })
+    ->where('status', 1)
+    ->orderBy('id', 'desc')
+    ->get();
+
+return view('frontend.product', compact(
+    'productt',
+    'curr',
+    'affilate_user',
+    'vendor_products',
+    'productFaqs'
+));
+
     }
 
     public function report(Request $request)

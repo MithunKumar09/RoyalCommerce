@@ -10,17 +10,17 @@
     @endif
     <link rel="canonical" href="{{ url()->current() }}">
     <!--Essential css files-->
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/all.css">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/all.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/icofont.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/slick.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/nice-select.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/jquery-ui.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/animate.css">
-    <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css">
-    <link rel="stylesheet" href="{{ asset('assets/front') }}/css/custom.css">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/slick.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/nice-select.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/jquery-ui.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/animate.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/datatables.min.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/style.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('assets/front/css/custom.css') }}">
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
     @include('partials.global.extra-head')
     @yield('css')
@@ -77,17 +77,17 @@
     <!--Esential Js Files-->
     <script src="{{ asset('assets/front') }}/js/jquery.min.js"></script>
         <script src="{{ asset('assets/front') }}/js/slick.js"></script>
-    <script src="{{ asset('assets/front') }}/js/jquery-ui.js"></script>
-    <script src="{{ asset('assets/front') }}/js/nice-select.js"></script>
-    <script src="{{ asset('assets/front') }}/js/jquery.waypoints.min.js"></script>
-    <script src="{{ asset('assets/front') }}/js/jquery.counterup.js"></script>
+    <script src="{{ versioned_asset('assets/front/js/jquery-ui.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/nice-select.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/jquery.waypoints.min.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/jquery.counterup.js') }}"></script>
  
-    <script src="{{ asset('assets/front') }}/js/wow.js"></script>
-    <script src="{{ asset('assets/front') }}/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/wow.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/toastr.min.js') }}"></script>
     
-    <script src="{{ asset('assets/front') }}/js/script.js"></script>
-    <script src="{{ asset('assets/front/js/myscript.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/script.js') }}"></script>
+    <script src="{{ versioned_asset('assets/front/js/myscript.js') }}"></script>
 
 
 @include('partials.global.js-globals')

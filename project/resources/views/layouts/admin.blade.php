@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/admin.blade.php --}}
 <!doctype html>
 <html lang="en" dir="ltr">
 
@@ -28,7 +29,13 @@
 	<!-- Main Css -->
 
 	<!-- stylesheet -->
-	@if(DB::table('admin_languages')->where('is_default', '=', 1)->first()->rtl == 1)
+	@php
+		$adminLangRtl = Cache::remember('admin_default_lang_rtl', 3600, function() {
+			$lang = DB::table('admin_languages')->where('is_default', '=', 1)->first();
+			return $lang ? (int)$lang->rtl : 0;
+		});
+	@endphp
+	@if($adminLangRtl == 1)
 
 		<link href="{{asset('assets/admin/css/rtl/style.css')}}" rel="stylesheet" />
 		<link href="{{asset('assets/admin/css/rtl/custom.css')}}" rel="stylesheet" />

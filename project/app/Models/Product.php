@@ -117,7 +117,7 @@ class Product extends Model
 
         // Attribute Section
 
-        $attributes = $this->attributes["attributes"];
+        $attributes = $this->getAttribute('attributes');
         if (!empty($attributes)) {
             $attrArr = json_decode($attributes, true);
         }

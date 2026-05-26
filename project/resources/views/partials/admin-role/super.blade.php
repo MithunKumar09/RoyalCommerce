@@ -1,3 +1,12 @@
+{{-- ✅ RFQ (visible to all admins – no permission check) --}}
+<li>
+    <a href="{{ route('admin.rfqs.index') }}" class="wave-effect">
+        <i class="fas fa-file-invoice"></i>
+        {{ __('RFQ Requests') }}
+    </a>
+</li>
+{{-- ✅ RFQ END --}}
+
 <li>
     <a href="#order" class="accordion-toggle wave-effect" data-toggle="collapse" aria-expanded="false"><i
             class="fas fa-hand-holding-usd"></i>{{ __('Orders') }}</a>

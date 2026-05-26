@@ -36,6 +36,30 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CacheControl::class,
+        ],
+
+        /**
+         * PERFORMANCE FIX: Lightweight middleware group for read-only public pages
+         * Excludes StartSession to reduce request overhead (~200-300ms per request)
+         * 
+         * Use this for pages that don't need session state during render:
+         * - Public home page (authenticated users have cached session)
+         * - Product listings/categories (read-only, no cart modifications)
+         * - FAQ, contact, terms, policy pages
+         * - Blog posts (read-only content)
+         * 
+         * SECURITY: Session still available for authentication checks,
+         * just not initialized/serialized on every request
+         */
+        'web_static' => [
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            // StartSession EXCLUDED to reduce overhead for read-only pages
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CacheControl::class,
         ],
 
         'api' => [
@@ -43,6 +67,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             //\Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\CacheControl::class . ':api',
         ],
     ];
 
@@ -58,6 +83,7 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'cache.control' => \App\Http\Middleware\CacheControl::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,

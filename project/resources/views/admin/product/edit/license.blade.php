@@ -1606,7 +1606,9 @@
             resetHotspots();
         });
 
-        $('#media_hotspot_image').on('click', function(e) {
+        $(document)
+    .off('click.apmHotspotImage')
+    .on('click.apmHotspotImage', '#media_hotspot_image', function(e) {
             if (!$('#media_hotspot_base').val()) {
                 $.notify('{{ __('Please select a base image first.') }}', 'warning');
                 return;

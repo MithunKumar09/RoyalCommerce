@@ -20,5 +20,32 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-php_value max_input_vars 2000
-php_value max_multipart_body_parts 2048
+# Cache Control Headers
+<IfModule mod_headers.c>
+    # Dynamic content - no cache
+    <FilesMatch "\.(php|html?)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Static assets - aggressive cache (versioned assets)
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot|webp)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+        Header set Expires "Sat, 01 Jan 2028 00:00:00 GMT"
+    </FilesMatch>
+</IfModule>
+
+# Font MIME types — required on hosts that don't configure these by default
+<IfModule mod_mime.c>
+    AddType font/woff2                   .woff2
+    AddType font/woff                    .woff
+    AddType font/ttf                     .ttf
+    AddType application/vnd.ms-fontobject .eot
+</IfModule>
+
+# PHP ini directives — mod_php only (PHP-FPM reads project/.user.ini instead)
+<IfModule mod_php.c>
+    php_value max_input_vars 2000
+    php_value max_multipart_body_parts 2048
+</IfModule>

@@ -76,16 +76,16 @@
                 {{-- Promo banners row (static demo images) --}}
                 <div class="t4-promo-row">
                     <a class="t4-promo" href="#">
-                        <img src="{{ asset('assets/images/arrival/1730868330Banner9-minpng.png') }}" alt="Promo">
+                        <img src="{{ asset('assets/images/arrival/1730868330Banner9-minpng.png') }}" alt="Promo" loading="lazy">
                     </a>
                     <a class="t4-promo" href="#">
-                        <img src="{{ asset('assets/images/arrival/1730868319Banner8-minpng.png') }}" alt="Promo">
+                        <img src="{{ asset('assets/images/arrival/1730868319Banner8-minpng.png') }}" alt="Promo" loading="lazy">
                     </a>
                     <a class="t4-promo" href="#">
-                        <img src="{{ asset('assets/images/arrival/1730868306Banner7-minpng.png') }}" alt="Promo">
+                        <img src="{{ asset('assets/images/arrival/1730868306Banner7-minpng.png') }}" alt="Promo" loading="lazy">
                     </a>
                     <a class="t4-promo" href="#">
-                        <img src="{{ asset('assets/images/arrival/1724559403partnerpng.png') }}" alt="Promo">
+                        <img src="{{ asset('assets/images/arrival/1724559403partnerpng.png') }}" alt="Promo" loading="lazy">
                     </a>
                 </div>
             </div>
@@ -111,10 +111,10 @@
                 {{-- Bottom banner trio (demo) --}}
                 <div class="t4-bottom-banners">
                     <a class="t4-bottom-banner" href="#">
-                        <img src="{{ asset('assets/images/arrival/1724559395sliderimg1png.png') }}" alt="Banner">
+                        <img src="{{ asset('assets/images/arrival/1724559395sliderimg1png.png') }}" alt="Banner" loading="lazy">
                     </a>
                     <a class="t4-bottom-banner" href="#">
-                        <img src="{{ asset('assets/images/arrival/1724559385sliderimg2png.png') }}" alt="Banner">
+                        <img src="{{ asset('assets/images/arrival/1724559385sliderimg2png.png') }}" alt="Banner" loading="lazy">
                     </a>
                     <a class="t4-bottom-banner" href="{{ route('front.track.search', 'DEMO') }}">
                         <div class="t4-track">

@@ -380,6 +380,15 @@ class ProductController extends AdminBaseController
         $manifestPayload['frames'] = $frameUrls;
         file_put_contents($manifestPath, json_encode($manifestPayload));
 
+        // Sync media_extra immediately so DB reflects filesystem state without requiring a form save.
+        $product = Product::find($id);
+        if ($product) {
+            $mediaExtra = json_decode($product->media_extra, true) ?: [];
+            $enabled = !empty($mediaExtra['v360']['enabled']);
+            $this->process360Manifest($product, $mediaExtra, $enabled);
+            $product->update(['media_extra' => json_encode($mediaExtra)]);
+        }
+
         return response()->json(['frames' => $frameUrls]);
     }
 
@@ -453,6 +462,16 @@ class ProductController extends AdminBaseController
         $manifestPath = $framesPath . DIRECTORY_SEPARATOR . 'manifest.json';
         @file_put_contents($manifestPath, json_encode(['frames' => []]));
 
+        // Sync media_extra so DB frame_count is reset to 0 immediately.
+        $product = Product::find($id);
+        if ($product) {
+            $mediaExtra = json_decode($product->media_extra, true) ?: [];
+            // Force v360 enabled state to off when all frames are deleted.
+            $enabled = false;
+            $this->process360Manifest($product, $mediaExtra, $enabled);
+            $product->update(['media_extra' => json_encode($mediaExtra)]);
+        }
+
         return response()->json([
             'status' => $failed === 0,
             'frames' => [],
@@ -466,8 +485,11 @@ class ProductController extends AdminBaseController
     {
         //--- Validation Section
         $rules = [
-            'photo' => 'required',
-            'file' => 'mimes:zip',
+            'photo'               => 'required',
+            'file'                => 'mimes:zip',
+            'media_3d_model'      => 'nullable|file|max:51200',
+            'media_video_file.*'  => 'nullable|file|mimes:mp4,webm,ogg|max:51200',
+            'media_video_url.*'   => 'nullable|url|max:2048',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -704,6 +726,17 @@ class ProductController extends AdminBaseController
         $img->save('assets/images/thumbnails/' . $thumbnail);
         $prod->thumbnail = $thumbnail;
         $prod->update();
+
+        // Process advanced media (3D model, hotspots, videos) submitted with the create form.
+        // 360° frames require a separate AJAX upload (needs product ID) — handled post-creation via Edit page.
+        $mediaExtra    = [];
+        $filesToDelete = [];  // No old files on create; array kept for consistent method signature.
+        $this->processModel3d($request, $prod, $mediaExtra, $filesToDelete);
+        $this->processHotspots($request, $prod, $mediaExtra, $filesToDelete);
+        $this->processVideos($request, $prod, $filesToDelete);
+        if (!empty($mediaExtra)) {
+            $prod->update(['media_extra' => json_encode($mediaExtra)]);
+        }
 
         // Add To Gallery If any
         $lastid = $data->id;
@@ -1168,430 +1201,43 @@ class ProductController extends AdminBaseController
             $mediaExtra = [];
         }
         $updateWarnings = [];
+        $filesToDelete  = [];  // Paths queued for deletion AFTER DB save succeeds.
 
-        $framesDir = public_path('assets/products_media/' . $data->id . '/360/frames');
-        $manifestPath = $framesDir . '/manifest.json';
-        $manifestUrl = null;
-        $frameCount = 0;
-        $zeroPad = false;
-        $startFrame = 1;
-
-        if (file_exists($manifestPath)) {
-            $manifestData = json_decode(file_get_contents($manifestPath), true);
-            if (isset($manifestData['frames']) && is_array($manifestData['frames'])) {
-                $frameCount = count($manifestData['frames']);
-                $zeroPad = $frameCount > 0;
-                foreach ($manifestData['frames'] as $frameUrl) {
-                    $filename = basename(parse_url($frameUrl, PHP_URL_PATH));
-                    if (!preg_match('/^0+\d+\./', $filename)) {
-                        $zeroPad = false;
-                        break;
-                    }
-                }
-            }
-            $manifestUrl = asset('assets/products_media/' . $data->id . '/360/frames/manifest.json');
-        }
-
-        $hasV360Update = $request->has('media_360_enabled') || file_exists($manifestPath) || array_key_exists('v360', $mediaExtra);
+        // 360° manifest sync
+        $manifestPath = public_path('assets/products_media/' . $data->id . '/360/frames/manifest.json');
+        $hasV360Update = $request->has('media_360_enabled')
+            || file_exists($manifestPath)
+            || array_key_exists('v360', $mediaExtra);
         if ($hasV360Update) {
-            $mediaExtra['v360'] = [
-                'enabled' => $request->has('media_360_enabled') ? 1 : 0,
-                'frame_count' => $frameCount,
-                'base_path' => 'assets/products_media/' . $data->id . '/360/frames/',
-                'zero_pad' => $zeroPad,
-                'start_frame' => $startFrame,
-                'manifest' => $manifestUrl,
-            ];
+            $this->process360Manifest($data, $mediaExtra, (bool) $request->has('media_360_enabled'));
             $input['media_extra'] = json_encode($mediaExtra);
         }
 
-        $hasHotspotUpdate = $request->has('media_hotspot_enabled') || $request->has('media_hotspot_base') ||
-            $request->has('media_hotspot_label') || $request->has('media_hotspot_description') ||
-            $request->has('media_hotspot_x') || $request->has('media_hotspot_y') || array_key_exists('hotspots', $mediaExtra);
-        if ($hasHotspotUpdate) {
-            $labels = $request->input('media_hotspot_label', []);
-            $descriptions = $request->input('media_hotspot_description', []);
-            $xs = $request->input('media_hotspot_x', []);
-            $ys = $request->input('media_hotspot_y', []);
-            $types = $request->input('media_hotspot_type', []);
-            $targets = $request->input('media_hotspot_target', []);
-            $frames = $request->input('media_hotspot_frame', []);
-            $ids = $request->input('media_hotspot_id', []);
-            $deleteFlags = $request->input('media_hotspot_image_delete', []);
-            $x3ds = $request->input('media_hotspot_x3d', []);
-            $y3ds = $request->input('media_hotspot_y3d', []);
-            $z3ds = $request->input('media_hotspot_z3d', []);
-
-            $count = max(count($labels), count($descriptions), count($xs), count($ys), count($types), count($targets), count($frames));
-            if ($count > 50) {
-                $updateWarnings[] = __("Hotspot limit is 50. Extra items were ignored.");
-                $count = 50;
-            }
-
-            $existingItems = [];
-            if (isset($mediaExtra['hotspots']['items']) && is_array($mediaExtra['hotspots']['items'])) {
-                foreach ($mediaExtra['hotspots']['items'] as $item) {
-                    if (!empty($item['id'])) {
-                        $existingItems[$item['id']] = $item;
-                    }
-                }
-            }
-
-            $items = [];
-            $seenIds = [];
-            $baseImage = (string) $request->input('media_hotspot_base', '');
-            $hasBaseImage = !empty($baseImage);
-            $model3dExists = false;
-            if ($request->hasFile('media_3d_model')) {
-                $model3dExists = true;
-            } elseif (!empty($mediaExtra['model3d']['src'])) {
-                $existingModel = $mediaExtra['model3d']['src'];
-                $existingPath = parse_url($existingModel, PHP_URL_PATH);
-                if ($existingPath) {
-                    $model3dExists = file_exists(public_path(ltrim($existingPath, '/')));
-                }
-            }
-
-            for ($i = 0; $i < $count; $i++) {
-                $label = isset($labels[$i]) ? (string) $labels[$i] : '';
-                $description = isset($descriptions[$i]) ? (string) $descriptions[$i] : '';
-                $type = isset($types[$i]) ? (string) $types[$i] : 'text';
-                $target = isset($targets[$i]) ? (string) $targets[$i] : 'image';
-                if ($target !== 'image' && $target !== 'frame360' && $target !== 'model3d') {
-                    $target = 'image';
-                }
-
-                if ($target === 'image' && !$hasBaseImage) {
-                    $warning = __("Hotspot skipped: base image missing.");
-                    $updateWarnings[] = $warning;
-                    Log::warning($warning, ['product_id' => $data->id]);
-                    continue;
-                }
-                if ($target === 'frame360' && $frameCount < 1) {
-                    $warning = __("360° hotspot skipped: no frames available.");
-                    $updateWarnings[] = $warning;
-                    Log::warning($warning, ['product_id' => $data->id]);
-                    continue;
-                }
-                if ($target === 'model3d' && !$model3dExists) {
-                    $warning = __("3D hotspot skipped: model file missing.");
-                    $updateWarnings[] = $warning;
-                    Log::warning($warning, ['product_id' => $data->id]);
-                    continue;
-                }
-
-                $frameValue = null;
-                if ($target === 'frame360') {
-                    $frameValue = isset($frames[$i]) ? (int) $frames[$i] : null;
-                    if ($frameValue < 1 || $frameValue > $frameCount) {
-                        $warning = __("360° hotspot skipped: frame out of range.");
-                        $updateWarnings[] = $warning;
-                        Log::warning($warning, ['product_id' => $data->id, 'frame' => $frameValue]);
-                        continue;
-                    }
-                }
-
-                $rawX = isset($xs[$i]) ? (float) $xs[$i] : null;
-                $rawY = isset($ys[$i]) ? (float) $ys[$i] : null;
-
-                if ($target === 'model3d') {
-                    $x3d = isset($x3ds[$i]) ? $x3ds[$i] : null;
-                    $y3d = isset($y3ds[$i]) ? $y3ds[$i] : null;
-                    $z3d = isset($z3ds[$i]) ? $z3ds[$i] : null;
-                    if (!is_numeric($x3d) || !is_numeric($y3d) || !is_numeric($z3d)) {
-                        $warning = __("3D hotspot skipped: invalid coordinates.");
-                        $updateWarnings[] = $warning;
-                        Log::warning($warning, ['product_id' => $data->id]);
-                        continue;
-                    }
-                    if ($rawX === null || $rawY === null) {
-                        $rawX = 50;
-                        $rawY = 50;
-                    }
-                }
-
-                if ($target !== 'model3d') {
-                    if ($rawX === null || $rawY === null) {
-                        $warning = __("Hotspot skipped: missing coordinates.");
-                        $updateWarnings[] = $warning;
-                        Log::warning($warning, ['product_id' => $data->id]);
-                        continue;
-                    }
-                    $x = $rawX / 100;
-                    $y = $rawY / 100;
-                    if ($x < 0 || $x > 1 || $y < 0 || $y > 1) {
-                        $warning = __("Hotspot skipped: coordinates out of bounds.");
-                        $updateWarnings[] = $warning;
-                        Log::warning($warning, ['product_id' => $data->id]);
-                        continue;
-                    }
-                } else {
-                    $x = $rawX / 100;
-                    $y = $rawY / 100;
-                }
-                $id = !empty($ids[$i]) ? (string) $ids[$i] : 'hs_' . substr(sha1(
-                    sprintf('%.2f', $rawX) . '|' . sprintf('%.2f', $rawY) . '|' . $label . '|' . $description . '|' . $type
-                ), 0, 12);
-                $seenIds[] = $id;
-                $existingImage = null;
-                if (isset($existingItems[$id]['image'])) {
-                    if (is_array($existingItems[$id]['image']) && !empty($existingItems[$id]['image']['src'])) {
-                        $existingImage = $existingItems[$id]['image']['src'];
-                    } elseif (is_string($existingItems[$id]['image'])) {
-                        $existingImage = $existingItems[$id]['image'];
-                    }
-                }
-                if ($existingImage && strpos($existingImage, '/assets/products_media/' . $data->id . '/hotspots/images/') === false) {
-                    $updateWarnings[] = __("Hotspot image ignored (mismatched product).");
-                    $existingImage = null;
-                }
-                $imageUrl = $existingImage;
-
-                if ($request->hasFile('media_hotspot_image.' . $i)) {
-                    $file = $request->file('media_hotspot_image.' . $i);
-                    $ext = strtolower($file->getClientOriginalExtension());
-                    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                        $updateWarnings[] = __("Hotspot image skipped (invalid type).");
-                        $file = null;
-                    }
-                    if ($file && $file->getSize() > 2 * 1024 * 1024) {
-                        $updateWarnings[] = __("Hotspot image skipped (max 2MB).");
-                        $file = null;
-                    }
-                    if ($file && is_array($file)) {
-                        $updateWarnings[] = __("Hotspot image skipped (multiple files).");
-                        $file = null;
-                    }
-
-                    if ($file) {
-                        $uploadDir = public_path('assets/products_media/' . $data->id . '/hotspots/images');
-                        if (!file_exists($uploadDir)) {
-                            mkdir($uploadDir, 0755, true);
-                        }
-
-                        if (!empty($existingImage)) {
-                            $oldPath = parse_url($existingImage, PHP_URL_PATH);
-                            if ($oldPath) {
-                                $oldFile = public_path(ltrim($oldPath, '/'));
-                                if (file_exists($oldFile)) {
-                                    unlink($oldFile);
-                                }
-                            }
-                        }
-
-                        $fileName = 'hotspot_' . $id . '.' . $ext;
-                        $file->move($uploadDir, $fileName);
-                        $imageUrl = asset('assets/products_media/' . $data->id . '/hotspots/images/' . $fileName);
-                    }
-                } elseif (!empty($deleteFlags[$i])) {
-                    if (!empty($existingImage)) {
-                        $oldPath = parse_url($existingImage, PHP_URL_PATH);
-                        if ($oldPath) {
-                            $oldFile = public_path(ltrim($oldPath, '/'));
-                            if (file_exists($oldFile)) {
-                                unlink($oldFile);
-                            }
-                        }
-                    }
-                    $imageUrl = null;
-                }
-
-                $items[] = [
-                    'id' => $id,
-                    'type' => $type ?: 'text',
-                    'label' => $label,
-                    'description' => $description,
-                    'image' => $imageUrl ? [
-                        'src' => $imageUrl,
-                        'width' => null,
-                        'height' => null,
-                    ] : null,
-                    'position' => [
-                        'x' => $x,
-                        'y' => $y,
-                    ],
-                    'target' => $target ?: 'image',
-                    'frame' => $frameValue,
-                ];
-            }
-
-            if (!empty($existingItems)) {
-                foreach ($existingItems as $oldId => $oldItem) {
-                    $oldImage = null;
-                    if (isset($oldItem['image'])) {
-                        if (is_array($oldItem['image']) && !empty($oldItem['image']['src'])) {
-                            $oldImage = $oldItem['image']['src'];
-                        } elseif (is_string($oldItem['image'])) {
-                            $oldImage = $oldItem['image'];
-                        }
-                    }
-                    if (!in_array($oldId, $seenIds, true) && !empty($oldImage)) {
-                        if (strpos($oldImage, '/assets/products_media/' . $data->id . '/hotspots/images/') === false) {
-                            continue;
-                        }
-                        $oldPath = parse_url($oldImage, PHP_URL_PATH);
-                        if ($oldPath) {
-                            $oldFile = public_path(ltrim($oldPath, '/'));
-                            if (file_exists($oldFile)) {
-                                unlink($oldFile);
-                            }
-                        }
-                    }
-                }
-            }
-
-            $mediaExtra['hotspots'] = [
-                'enabled' => $request->has('media_hotspot_enabled') ? 1 : 0,
-                'target_image' => (string) $request->input('media_hotspot_base', ''),
-                'items' => $items,
-            ];
-            $input['media_extra'] = json_encode($mediaExtra);
-        }
-
-        $hasModel3dUpdate = $request->has('media_3d_enabled') || $request->hasFile('media_3d_model') || array_key_exists('model3d', $mediaExtra);
-        if ($hasModel3dUpdate) {
-            $modelPath = null;
-            if ($request->hasFile('media_3d_model')) {
-                $file = $request->file('media_3d_model');
-                $ext = strtolower($file->getClientOriginalExtension());
-                if (!in_array($ext, ['glb', 'gltf'])) {
-                    return response()->json(array('errors' => ['media_3d_model' => __("Only .glb or .gltf files are allowed.")]));
-                }
-
-                $uploadDir = public_path('assets/products_media/' . $data->id . '/3d');
-                if (!file_exists($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-
-                if (isset($mediaExtra['model3d']['src'])) {
-                    $oldSrc = $mediaExtra['model3d']['src'];
-                    $oldPath = parse_url($oldSrc, PHP_URL_PATH);
-                    if ($oldPath) {
-                        $oldFile = public_path(ltrim($oldPath, '/'));
-                        if (file_exists($oldFile)) {
-                            unlink($oldFile);
-                        }
-                    }
-                }
-
-                $fileName = time() . Str::random(8) . '.' . $ext;
-                $file->move($uploadDir, $fileName);
-                $modelPath = asset('assets/products_media/' . $data->id . '/3d/' . $fileName);
-            } elseif (isset($mediaExtra['model3d']['src'])) {
-                $modelPath = $mediaExtra['model3d']['src'];
-            }
-
-            $mediaExtra['model3d'] = [
-                'enabled' => $request->has('media_3d_enabled') ? 1 : 0,
-                'src' => $modelPath,
-                'poster' => null,
-                'viewer' => [
-                    'auto_rotate' => (bool) $request->input('media_3d_auto_rotate', false),
-                    'exposure' => $request->input('media_3d_exposure', null),
-                    'camera_orbit' => $request->input('media_3d_camera_orbit', null),
-                ],
-            ];
-            $input['media_extra'] = json_encode($mediaExtra);
-        }
-
-        $videoTargets = $request->input('media_video_target_type', []);
-        if (is_array($videoTargets) && !empty($videoTargets)) {
-            $videoTargetIds = $request->input('media_video_target_id', []);
-            $videoUrls = $request->input('media_video_url', []);
-            $videoRemoves = $request->input('media_video_remove', []);
-            $videoFiles = $request->file('media_video_file', []);
-            $existingVideos = ProductMediaVideo::where('product_id', $data->id)->get()->keyBy(function ($video) {
-                return $video->target_type . ':' . (string) $video->target_id;
-            });
-            $uploadDir = public_path('assets/products_media/' . $data->id . '/videos');
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-
-            foreach ($videoTargets as $key => $targetType) {
-                $targetId = isset($videoTargetIds[$key]) ? (int) $videoTargetIds[$key] : 0;
-                $targetKey = $targetType . ':' . (string) $targetId;
-                $existing = $existingVideos->get($targetKey);
-                $remove = isset($videoRemoves[$key]);
-                $file = $videoFiles[$key] ?? null;
-                $url = isset($videoUrls[$key]) ? trim((string) $videoUrls[$key]) : '';
-
-                if ($remove) {
-                    if ($existing && !empty($existing->video_path)) {
-                        $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
-                        $oldFile = public_path(ltrim($oldPath, '/'));
-                        if (file_exists($oldFile)) {
-                            unlink($oldFile);
-                        }
-                    }
-                    if ($existing) {
-                        $existing->delete();
-                    }
-                    continue;
-                }
-
-                if ($file) {
-                    $ext = strtolower($file->getClientOriginalExtension());
-                    if (!in_array($ext, ['mp4', 'webm', 'ogg'])) {
-                        return response()->json(array('errors' => ['media_video_file' => __("Only MP4, WebM, or OGG videos are allowed.")]));
-                    }
-                    if ($existing && !empty($existing->video_path)) {
-                        $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
-                        $oldFile = public_path(ltrim($oldPath, '/'));
-                        if (file_exists($oldFile)) {
-                            unlink($oldFile);
-                        }
-                    }
-                    $fileName = 'video_' . $targetType . '_' . $targetId . '_' . time() . '_' . Str::random(6) . '.' . $ext;
-                    $file->move($uploadDir, $fileName);
-                    $path = 'assets/products_media/' . $data->id . '/videos/' . $fileName;
-                    ProductMediaVideo::updateOrCreate(
-                        [
-                            'product_id' => $data->id,
-                            'target_type' => $targetType,
-                            'target_id' => $targetId,
-                        ],
-                        [
-                            'source_type' => 'upload',
-                            'video_path' => $path,
-                            'video_url' => null,
-                        ]
-                    );
-                    continue;
-                }
-
-                if ($url !== '') {
-                    if ($existing && !empty($existing->video_path)) {
-                        $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
-                        $oldFile = public_path(ltrim($oldPath, '/'));
-                        if (file_exists($oldFile)) {
-                            unlink($oldFile);
-                        }
-                    }
-                    ProductMediaVideo::updateOrCreate(
-                        [
-                            'product_id' => $data->id,
-                            'target_type' => $targetType,
-                            'target_id' => $targetId,
-                        ],
-                        [
-                            'source_type' => 'url',
-                            'video_path' => null,
-                            'video_url' => $url,
-                        ]
-                    );
-                }
-            }
-        }
+        // Hotspot, 3D model, and video processing — delegated to private helpers.
+        // $filesToDelete is populated by the helpers; files are unlinked AFTER DB save.
+        $updateWarnings = array_merge(
+            $updateWarnings,
+            $this->processHotspots($request, $data, $mediaExtra, $filesToDelete)
+        );
+        $this->processModel3d($request, $data, $mediaExtra, $filesToDelete);
+        $this->processVideos($request, $data, $filesToDelete);
+        $input['media_extra'] = json_encode($mediaExtra);
 
         $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
-
         $data->update($input);
+
+        // Deferred deletion: remove old files only after DB save succeeded.
+        foreach ($filesToDelete as $oldFile) {
+            if ($oldFile && file_exists($oldFile)) {
+                @unlink($oldFile);
+            }
+        }
         //-- Logic Section Ends
 
         //--- Redirect Section
         $msg = __("Product Updated Successfully.") . '<a href="' . route('admin-prod-index') . '">' . __("View Product Lists.") . '</a>';
-        if ($hasV360Update && $request->has('media_360_enabled') && $frameCount > 0 && $frameCount < 8) {
+        $v360FrameCount = isset($mediaExtra['v360']['frame_count']) ? (int) $mediaExtra['v360']['frame_count'] : 0;
+        if ($hasV360Update && $request->has('media_360_enabled') && $v360FrameCount > 0 && $v360FrameCount < 8) {
             $updateWarnings[] = __("Warning: 360° view needs at least 8 frames.");
         }
         if (!empty($updateWarnings)) {
@@ -1600,7 +1246,6 @@ class ProductController extends AdminBaseController
             }
         }
         return response()->json($msg);
-        //--- Redirect Section Ends
     }
 
     //*** GET Request
@@ -1723,6 +1368,23 @@ class ProductController extends AdminBaseController
             }
         }
         $data->delete();
+
+        // Clean up advanced media directory (360° frames, 3D models, hotspot images, videos).
+        $mediaDir = public_path('assets/products_media/' . $id);
+        if (is_dir($mediaDir)) {
+            $it = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($mediaDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+            foreach ($it as $file) {
+                $file->isDir() ? @rmdir($file->getRealPath()) : @unlink($file->getRealPath());
+            }
+            @rmdir($mediaDir);
+        }
+
+        // Remove video records for this product.
+        ProductMediaVideo::where('product_id', $id)->delete();
+
         //--- Redirect Section
         $msg = __('Product Deleted Successfully.');
         return response()->json($msg);
@@ -1797,6 +1459,389 @@ class ProductController extends AdminBaseController
     {
         $crossProducts = Product::where('category_id', $catId)->where('status', 1)->get();
         return view('load.cross_product', compact('crossProducts'));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Advanced Media Private Helpers
+    // Shared between store() and update() so create and edit use identical logic.
+    // File deletions are deferred: callers collect paths in $filesToDelete and
+    // unlink them AFTER the DB save succeeds, preventing data loss on save failure.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Sync media_extra['v360'] from the on-disk manifest.json.
+     * Called from update(), media360Upload(), and media360Delete().
+     */
+    private function process360Manifest(Product $product, array &$mediaExtra, bool $enabled): void
+    {
+        $framesDir    = public_path('assets/products_media/' . $product->id . '/360/frames');
+        $manifestPath = $framesDir . '/manifest.json';
+        $frameCount   = 0;
+        $zeroPad      = false;
+        $startFrame   = 1;
+        $manifestUrl  = null;
+
+        if (file_exists($manifestPath)) {
+            $manifestData = json_decode(file_get_contents($manifestPath), true);
+            if (isset($manifestData['frames']) && is_array($manifestData['frames'])) {
+                $frameCount = count($manifestData['frames']);
+                $zeroPad    = $frameCount > 0;
+                foreach ($manifestData['frames'] as $frameUrl) {
+                    $filename = basename(parse_url($frameUrl, PHP_URL_PATH));
+                    if (!preg_match('/^0+\d+\./', $filename)) {
+                        $zeroPad = false;
+                        break;
+                    }
+                }
+            }
+            // Relative URL — avoids APP_URL dependency across environments.
+            $manifestUrl = '/assets/products_media/' . $product->id . '/360/frames/manifest.json';
+        }
+
+        if (file_exists($manifestPath) || array_key_exists('v360', $mediaExtra)) {
+            $mediaExtra['v360'] = [
+                'enabled'     => $enabled ? 1 : 0,
+                'frame_count' => $frameCount,
+                'base_path'   => 'assets/products_media/' . $product->id . '/360/frames/',
+                'zero_pad'    => $zeroPad,
+                'start_frame' => $startFrame,
+                'manifest'    => $manifestUrl,
+            ];
+        }
+    }
+
+    /**
+     * Process 3D model upload and viewer settings.
+     * Marks old model file for deferred deletion (does not unlink immediately).
+     */
+    private function processModel3d(Request $request, Product $product, array &$mediaExtra, array &$filesToDelete): void
+    {
+        $hasModel3dUpdate = $request->has('media_3d_enabled')
+            || $request->hasFile('media_3d_model')
+            || array_key_exists('model3d', $mediaExtra);
+
+        if (!$hasModel3dUpdate) {
+            return;
+        }
+
+        $modelPath = null;
+
+        if ($request->hasFile('media_3d_model')) {
+            $file = $request->file('media_3d_model');
+            $ext  = strtolower($file->getClientOriginalExtension());
+            if (!in_array($ext, ['glb', 'gltf'])) {
+                // Validation already ran; this is a safety guard.
+                return;
+            }
+
+            $uploadDir = public_path('assets/products_media/' . $product->id . '/3d');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Queue old file for deferred deletion (after DB save).
+            if (isset($mediaExtra['model3d']['src'])) {
+                $oldPath = parse_url($mediaExtra['model3d']['src'], PHP_URL_PATH);
+                if ($oldPath) {
+                    $filesToDelete[] = public_path(ltrim($oldPath, '/'));
+                }
+            }
+
+            $fileName  = time() . Str::random(8) . '.' . $ext;
+            $file->move($uploadDir, $fileName);
+            $modelPath = 'assets/products_media/' . $product->id . '/3d/' . $fileName;
+        } elseif (isset($mediaExtra['model3d']['src'])) {
+            $modelPath = $mediaExtra['model3d']['src'];
+        }
+
+        $mediaExtra['model3d'] = [
+            'enabled' => $request->has('media_3d_enabled') ? 1 : 0,
+            'src'     => $modelPath,
+            'poster'  => null,
+            'viewer'  => [
+                'auto_rotate'   => (bool) $request->input('media_3d_auto_rotate', false),
+                'exposure'      => $request->input('media_3d_exposure', null),
+                'camera_orbit'  => $request->input('media_3d_camera_orbit', null),
+            ],
+        ];
+    }
+
+    /**
+     * Process hotspot data, image uploads, and old image cleanup.
+     * Returns array of user-facing warning strings.
+     * Old image files are queued for deferred deletion (not unlinked here).
+     */
+    private function processHotspots(Request $request, Product $product, array &$mediaExtra, array &$filesToDelete): array
+    {
+        $warnings = [];
+
+        $hasHotspotUpdate = $request->has('media_hotspot_enabled')
+            || $request->has('media_hotspot_base')
+            || $request->has('media_hotspot_label')
+            || $request->has('media_hotspot_description')
+            || $request->has('media_hotspot_x')
+            || $request->has('media_hotspot_y')
+            || array_key_exists('hotspots', $mediaExtra);
+
+        if (!$hasHotspotUpdate) {
+            return $warnings;
+        }
+
+        $labels      = $request->input('media_hotspot_label', []);
+        $descriptions = $request->input('media_hotspot_description', []);
+        $xs          = $request->input('media_hotspot_x', []);
+        $ys          = $request->input('media_hotspot_y', []);
+        $types       = $request->input('media_hotspot_type', []);
+        $targets     = $request->input('media_hotspot_target', []);
+        $frames      = $request->input('media_hotspot_frame', []);
+        $ids         = $request->input('media_hotspot_id', []);
+        $deleteFlags = $request->input('media_hotspot_image_delete', []);
+        $x3ds        = $request->input('media_hotspot_x3d', []);
+        $y3ds        = $request->input('media_hotspot_y3d', []);
+        $z3ds        = $request->input('media_hotspot_z3d', []);
+
+        $count = max(
+            count($labels), count($descriptions), count($xs), count($ys),
+            count($types), count($targets), count($frames)
+        );
+        if ($count > 50) {
+            $warnings[] = __("Hotspot limit is 50. Extra items were ignored.");
+            $count = 50;
+        }
+
+        $existingItems = [];
+        if (isset($mediaExtra['hotspots']['items']) && is_array($mediaExtra['hotspots']['items'])) {
+            foreach ($mediaExtra['hotspots']['items'] as $item) {
+                if (!empty($item['id'])) {
+                    $existingItems[$item['id']] = $item;
+                }
+            }
+        }
+
+        $items    = [];
+        $seenIds  = [];
+        $baseImage = (string) $request->input('media_hotspot_base', '');
+        $hasBaseImage = !empty($baseImage);
+
+        $model3dExists = false;
+        if ($request->hasFile('media_3d_model')) {
+            $model3dExists = true;
+        } elseif (!empty($mediaExtra['model3d']['src'])) {
+            $existingPath = parse_url($mediaExtra['model3d']['src'], PHP_URL_PATH);
+            if ($existingPath) {
+                $model3dExists = file_exists(public_path(ltrim($existingPath, '/')));
+            }
+        }
+
+        $uploadDir = public_path('assets/products_media/' . $product->id . '/hotspots/images');
+        if ($count > 0 && !file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        for ($i = 0; $i < $count; $i++) {
+            $label       = isset($labels[$i])      ? (string) $labels[$i]      : '';
+            $description = isset($descriptions[$i]) ? (string) $descriptions[$i] : '';
+            $type        = isset($types[$i])        ? (string) $types[$i]        : 'text';
+            $target      = isset($targets[$i])      ? (string) $targets[$i]      : 'image';
+            if (!in_array($target, ['image', 'frame360', 'model3d'])) {
+                $target = 'image';
+            }
+
+            if ($target === 'image' && !$hasBaseImage) {
+                $warnings[] = __("Hotspot skipped: base image missing.");
+                continue;
+            }
+            if ($target === 'frame360') {
+                $framesDir = public_path('assets/products_media/' . $product->id . '/360/frames');
+                if (!file_exists($framesDir) || count(array_diff(scandir($framesDir), ['.', '..', 'manifest.json'])) === 0) {
+                    $warnings[] = __("Hotspot skipped: no 360° frames uploaded.");
+                    continue;
+                }
+            }
+            if ($target === 'model3d' && !$model3dExists) {
+                $warnings[] = __("Hotspot skipped: no 3D model uploaded.");
+                continue;
+            }
+
+            $x = isset($xs[$i]) ? (float) $xs[$i] : 0.0;
+            $y = isset($ys[$i]) ? (float) $ys[$i] : 0.0;
+            if ($x > 1 || $y > 1) { $x /= 100; $y /= 100; }
+            $x = max(0.0, min(1.0, $x));
+            $y = max(0.0, min(1.0, $y));
+
+            $frameValue = null;
+            if ($target === 'frame360' && isset($frames[$i]) && (string) $frames[$i] !== '') {
+                $frameValue = (int) $frames[$i];
+            }
+
+            $id = isset($ids[$i]) && $ids[$i] !== '' ? (string) $ids[$i] : ('hs_' . sha1(uniqid('', true)));
+            $seenIds[] = $id;
+
+            $existingImage = null;
+            if (isset($existingItems[$id])) {
+                $oldItem = $existingItems[$id];
+                if (is_array($oldItem['image'] ?? null) && !empty($oldItem['image']['src'])) {
+                    $existingImage = $oldItem['image']['src'];
+                } elseif (is_string($oldItem['image'] ?? null)) {
+                    $existingImage = $oldItem['image'];
+                }
+            }
+
+            $imageUrl = $existingImage;
+
+            if ($request->hasFile("media_hotspot_image.$i") || isset($request->file('media_hotspot_image', [])[$i])) {
+                $uploadedFiles = $request->file('media_hotspot_image', []);
+                $file = $uploadedFiles[$i] ?? null;
+                if ($file && $file->isValid()) {
+                    $ext = strtolower($file->getClientOriginalExtension());
+                    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                        $warnings[] = __("Hotspot image skipped: invalid type.");
+                    } else {
+                        if ($existingImage) {
+                            $oldPath = parse_url($existingImage, PHP_URL_PATH);
+                            if ($oldPath) {
+                                $oldFile = public_path(ltrim($oldPath, '/'));
+                                if (strpos($oldFile, DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'products_media' . DIRECTORY_SEPARATOR . $product->id . DIRECTORY_SEPARATOR) !== false) {
+                                    $filesToDelete[] = $oldFile;
+                                }
+                            }
+                        }
+                        $fileName = 'hotspot_' . $id . '.' . $ext;
+                        $file->move($uploadDir, $fileName);
+                        $imageUrl = asset('assets/products_media/' . $product->id . '/hotspots/images/' . $fileName);
+                    }
+                }
+            } elseif (!empty($deleteFlags[$i])) {
+                if ($existingImage) {
+                    $oldPath = parse_url($existingImage, PHP_URL_PATH);
+                    if ($oldPath) {
+                        $oldFile = public_path(ltrim($oldPath, '/'));
+                        if (file_exists($oldFile)) {
+                            $filesToDelete[] = $oldFile;
+                        }
+                    }
+                }
+                $imageUrl = null;
+            }
+
+            $items[] = [
+                'id'          => $id,
+                'type'        => $type ?: 'text',
+                'label'       => $label,
+                'description' => $description,
+                'image'       => $imageUrl ? ['src' => $imageUrl, 'width' => null, 'height' => null] : null,
+                'position'    => ['x' => $x, 'y' => $y],
+                'target'      => $target ?: 'image',
+                'frame'       => $frameValue,
+            ];
+        }
+
+        // Queue orphaned hotspot images (items removed from the list) for deferred deletion.
+        foreach ($existingItems as $oldId => $oldItem) {
+            if (in_array($oldId, $seenIds, true)) {
+                continue;
+            }
+            $oldImage = null;
+            if (is_array($oldItem['image'] ?? null) && !empty($oldItem['image']['src'])) {
+                $oldImage = $oldItem['image']['src'];
+            } elseif (is_string($oldItem['image'] ?? null)) {
+                $oldImage = $oldItem['image'];
+            }
+            if (!$oldImage) {
+                continue;
+            }
+            if (strpos($oldImage, '/assets/products_media/' . $product->id . '/hotspots/images/') === false) {
+                continue;
+            }
+            $oldPath = parse_url($oldImage, PHP_URL_PATH);
+            if ($oldPath) {
+                $filesToDelete[] = public_path(ltrim($oldPath, '/'));
+            }
+        }
+
+        $mediaExtra['hotspots'] = [
+            'enabled'      => $request->has('media_hotspot_enabled') ? 1 : 0,
+            'target_image' => (string) $request->input('media_hotspot_base', ''),
+            'items'        => $items,
+        ];
+
+        return $warnings;
+    }
+
+    /**
+     * Process video uploads and URL-based videos.
+     * Old video files are queued for deferred deletion.
+     */
+    private function processVideos(Request $request, Product $product, array &$filesToDelete): void
+    {
+        $videoTargets = $request->input('media_video_target_type', []);
+        if (!is_array($videoTargets) || empty($videoTargets)) {
+            return;
+        }
+
+        $videoTargetIds = $request->input('media_video_target_id', []);
+        $videoUrls      = $request->input('media_video_url', []);
+        $videoRemoves   = $request->input('media_video_remove', []);
+        $videoFiles     = $request->file('media_video_file', []);
+
+        $existingVideos = ProductMediaVideo::where('product_id', $product->id)
+            ->get()
+            ->keyBy(fn($v) => $v->target_type . ':' . (string) $v->target_id);
+
+        $uploadDir = public_path('assets/products_media/' . $product->id . '/videos');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        foreach ($videoTargets as $key => $targetType) {
+            $targetId  = isset($videoTargetIds[$key]) ? (int) $videoTargetIds[$key] : 0;
+            $targetKey = $targetType . ':' . (string) $targetId;
+            $existing  = $existingVideos->get($targetKey);
+            $remove    = isset($videoRemoves[$key]);
+            $file      = $videoFiles[$key] ?? null;
+            $url       = isset($videoUrls[$key]) ? trim((string) $videoUrls[$key]) : '';
+
+            if ($remove) {
+                if ($existing && !empty($existing->video_path)) {
+                    $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
+                    $filesToDelete[] = public_path(ltrim($oldPath, '/'));
+                }
+                if ($existing) {
+                    $existing->delete();
+                }
+                continue;
+            }
+
+            if ($file) {
+                $ext = strtolower($file->getClientOriginalExtension());
+                if (!in_array($ext, ['mp4', 'webm', 'ogg'])) {
+                    continue;
+                }
+                if ($existing && !empty($existing->video_path)) {
+                    $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
+                    $filesToDelete[] = public_path(ltrim($oldPath, '/'));
+                }
+                $fileName = 'video_' . $targetType . '_' . $targetId . '_' . time() . '_' . Str::random(6) . '.' . $ext;
+                $file->move($uploadDir, $fileName);
+                $path = 'assets/products_media/' . $product->id . '/videos/' . $fileName;
+                ProductMediaVideo::updateOrCreate(
+                    ['product_id' => $product->id, 'target_type' => $targetType, 'target_id' => $targetId],
+                    ['source_type' => 'upload', 'video_path' => $path, 'video_url' => null]
+                );
+                continue;
+            }
+
+            if ($url !== '') {
+                if ($existing && !empty($existing->video_path)) {
+                    $oldPath = parse_url($existing->video_path, PHP_URL_PATH) ?: $existing->video_path;
+                    $filesToDelete[] = public_path(ltrim($oldPath, '/'));
+                }
+                ProductMediaVideo::updateOrCreate(
+                    ['product_id' => $product->id, 'target_type' => $targetType, 'target_id' => $targetId],
+                    ['source_type' => 'url', 'video_path' => null, 'video_url' => $url]
+                );
+            }
+        }
     }
 
 }

@@ -4,6 +4,7 @@
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/select2.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/admin/css/advanced-media.css') }}" rel="stylesheet" />
 @endsection
 @section('content')
     <div class="content-area">
@@ -649,6 +650,7 @@
                                             </div>
                                         </div>
                                         <input type="hidden" id="feature_photo" name="photo" value="">
+
                                         <input type="file" name="gallery[]" class="hidden" id="uploadgallery"
                                             accept="image/*" multiple>
                                         <div class="row mb-4">
@@ -764,6 +766,25 @@
                                             </div>
                                         </div>
 
+                                        @php
+                                            $product = null; $mode = 'create'; $productId = 0;
+                                            $mediaExtra = []; $v360 = []; $hotspots = []; $model3d = [];
+                                            $v360Count = 0; $v360HasFrames = false;
+                                            $hotspotItems = []; $hotspotBase = '';
+                                            $mediaVideos = collect(); $mediaVideoMap = [];
+                                        @endphp
+                                        @include('admin.product.partials.advanced-media-panel', [
+                                            'product'       => $product,
+                                            'mode'          => $mode,
+                                            'productId'     => $productId,
+                                            'mediaExtra'    => $mediaExtra,
+                                            'v360'          => $v360,
+                                            'hotspots'      => $hotspots,
+                                            'model3d'       => $model3d,
+                                            'mediaVideos'   => $mediaVideos,
+                                            'mediaVideoMap' => $mediaVideoMap,
+                                        ])
+
                                         <div class="row text-center">
                                             <div class="col-6 offset-3">
                                                 <button class="addProductSubmit-btn"
@@ -829,8 +850,467 @@
     <script src="{{ asset('assets/admin/js/select2.js') }}"></script>
 
     <script type="text/javascript">
+window.productMediaRegistry = {
+    featureImage: null,
+    featureImageObjectUrl: null,
+
+    galleryImages: [],
+    galleryObjectUrls: [],
+
+    model3dObjectUrl: null,
+    model3dFile: null,
+    hotspots: []
+};
+
+function syncHotspotBaseImages() {
+
+    const $baseSelect = $('#media_hotspot_base');
+
+    if (!$baseSelect.length) {
+        return;
+    }
+
+    const currentValue = $baseSelect.val();
+
+    const hasCurrentSelection =
+    currentValue &&
+    $baseSelect.find(
+        'option[value="' + currentValue + '"]'
+    ).length;
+
+$baseSelect.find('.runtime-gallery-option').remove();
+
+if (window.productMediaRegistry.featureImage) {
+
+    let featurePreviewSrc =
+        window.productMediaRegistry.featureImage;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Convert base64 -> blob URL
+    |--------------------------------------------------------------------------
+    */
+    if (
+        typeof featurePreviewSrc === 'string' &&
+        featurePreviewSrc.indexOf('data:image') === 0
+    ) {
+
+        try {
+
+            const arr =
+                featurePreviewSrc.split(',');
+
+            const mime =
+                arr[0].match(/:(.*?);/)[1];
+
+            const bstr =
+                atob(arr[1]);
+
+            let n = bstr.length;
+
+            const u8arr =
+                new Uint8Array(n);
+
+            while (n--) {
+
+                u8arr[n] =
+                    bstr.charCodeAt(n);
+
+            }
+
+            const blob = new Blob(
+                [u8arr],
+                { type: mime }
+            );
+
+            featurePreviewSrc =
+                URL.createObjectURL(blob);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Cleanup previous object URL
+            |--------------------------------------------------------------------------
+            */
+            if (
+                window.productMediaRegistry
+                    .featureImageObjectUrl
+            ) {
+
+                URL.revokeObjectURL(
+                    window.productMediaRegistry
+                        .featureImageObjectUrl
+                );
+
+            }
+
+            window.productMediaRegistry
+                .featureImageObjectUrl =
+                    featurePreviewSrc;
+
+        } catch (e) {
+
+            console.error(
+                'feature image conversion failed',
+                e
+            );
+
+        }
+
+    }
+
+    $baseSelect.append(
+        '<option class="runtime-gallery-option" ' +
+        'value="feature" ' +
+        'data-src="' + featurePreviewSrc + '">' +
+        'Feature Image' +
+        '</option>'
+    );
+
+}
+
+    window.productMediaRegistry.galleryImages.forEach(function(image, index) {
+
+    if (!image) {
+        return;
+    }
+
+        $baseSelect.append(
+            '<option class="runtime-gallery-option" ' +
+            'value="gallery_' + Date.now() + '_' + index + '" ' +
+            'data-src="' + image + '">' +
+            'Gallery Image ' + (index + 1) +
+            '</option>'
+        );
+
+    });
+
+if (hasCurrentSelection) {
+
+    $baseSelect.val(currentValue);
+
+} else {
+
+    const firstRuntimeOption =
+        $baseSelect.find(
+            '.runtime-gallery-option'
+        ).first();
+
+    if (firstRuntimeOption.length) {
+
+        $baseSelect.val(
+            firstRuntimeOption.val()
+        );
+
+    }
+
+}
+
+syncHotspotPreviewImage();
+
+}
+
+function waitForImageReady(img, callback) {
+
+    if (!img) {
+        return;
+    }
+
+    if (
+        img.complete &&
+        img.naturalWidth > 0
+    ) {
+
+        callback();
+
+        return;
+    }
+
+    $(img)
+        .off('.apmImgReady')
+        .one('load.apmImgReady', function() {
+
+            callback();
+
+        })
+        .one('error.apmImgReady', function() {
+
+            mlog('image failed to load', img.src);
+
+        });
+
+}
+
+function syncHotspotPreviewImage() {
+
+    const $baseSelect = $('#media_hotspot_base');
+
+    const selectedSrc = $baseSelect
+        .find(':selected')
+        .data('src');
+
+    const img =
+        document.getElementById('media_hotspot_image');
+
+    if (!img) {
+        return;
+    }
+
+let previewSrc =
+    selectedSrc || '/assets/images/noimage.png';
+
+if (
+    previewSrc &&
+    previewSrc.indexOf('blob:') !== 0 &&
+    previewSrc.indexOf('data:image') !== 0
+) {
+
+    previewSrc += (
+        previewSrc.indexOf('?') >= 0
+            ? '&'
+            : '?'
+    ) + '_ts=' + Date.now();
+
+}
+
+img.src = previewSrc;
+
+    waitForImageReady(img, function() {
+
+        $(img).trigger('apm:image-ready');
+        renderHotspots();
+
+    });
+
+}
+
+function renderHotspots() {
+
+    const wrapper =
+        document.getElementById(
+            'media_hotspot_preview_wrapper'
+        );
+
+    const img =
+        document.getElementById(
+            'media_hotspot_image'
+        );
+
+    if (!wrapper || !img) {
+        return;
+    }
+
+    wrapper
+        .querySelectorAll('.apm-hotspot')
+        .forEach(function(node) {
+
+            node.remove();
+
+        });
+
+    window.productMediaRegistry.hotspots
+        .forEach(function(hotspot, index) {
+
+            const marker =
+                document.createElement('div');
+
+            marker.className =
+                'apm-hotspot';
+
+            marker.setAttribute(
+                'data-index',
+                index
+            );
+
+            marker.style.position = 'absolute';
+
+            marker.style.left =
+                hotspot.x + '%';
+
+            marker.style.top =
+                hotspot.y + '%';
+
+            marker.style.transform =
+                'translate(-50%, -50%)';
+
+            marker.style.width = '18px';
+
+            marker.style.height = '18px';
+
+            marker.style.borderRadius =
+                '50%';
+
+            marker.style.background =
+                '#2563eb';
+
+            marker.style.border =
+                '2px solid #fff';
+
+            marker.style.cursor =
+                'pointer';
+
+            marker.style.zIndex = '50';
+
+            wrapper.appendChild(marker);
+
+        });
+
+}
+
+$(document)
+.off('click.apmHotspotCreate')
+.on(
+    'click.apmHotspotCreate',
+    '#media_hotspot_image',
+    function(e) {
+
+        const image =
+            e.currentTarget;
+
+        const rect =
+            image.getBoundingClientRect();
+
+        const x =
+            (
+                (e.clientX - rect.left)
+                / rect.width
+            ) * 100;
+
+        const y =
+            (
+                (e.clientY - rect.top)
+                / rect.height
+            ) * 100;
+
+        window.productMediaRegistry.hotspots.push({
+            x: Number(x.toFixed(2)),
+            y: Number(y.toFixed(2))
+        });
+
+        renderHotspots();
+
+        syncHotspotInputs();
+
+    }
+);
+
+function syncHotspotInputs() {
+
+    $('#apm-hotspot-hidden-inputs').remove();
+
+    const container =
+        $('<div id="apm-hotspot-hidden-inputs"></div>');
+
+    window.productMediaRegistry.hotspots
+        .forEach(function(hotspot) {
+
+            container.append(
+                '<input type="hidden" ' +
+                'name="media_hotspots[]" ' +
+                'value=\'' +
+                JSON.stringify(hotspot) +
+                '\'>'
+            );
+
+        });
+
+    $('#geniusform').append(container);
+
+}
+
         (function($) {
             "use strict";
+            if (
+    typeof ensureModelViewerScripts === 'function'
+) {
+
+    ensureModelViewerScripts();
+
+}
+
+function refreshCreate3DPreview(objectUrl) {
+
+    const $preview =
+        $('#media_3d_preview');
+
+    if (!$preview.length) {
+        return;
+    }
+
+    if (!objectUrl) {
+
+        $preview.html(
+            '<p>No 3D model selected.</p>'
+        );
+
+        return;
+    }
+
+    $preview.html(
+        '<model-viewer ' +
+            'src="' + objectUrl + '" ' +
+            'camera-controls ' +
+            'auto-rotate ' +
+            'shadow-intensity="1" ' +
+            'style="width:100%;height:320px;">' +
+        '</model-viewer>'
+    );
+
+}
+
+$(document).on(
+    'change',
+    '#media_hotspot_base',
+    function () {
+
+        syncHotspotPreviewImage();
+
+    }
+);
+
+$(document)
+    .off('change.apm3dCreate')
+    .on(
+        'change.apm3dCreate',
+        '#media_3d_file',
+        function(e) {
+
+            const file =
+                e.target.files &&
+                e.target.files[0];
+
+            if (!file) {
+
+                refreshCreate3DPreview(null);
+
+                return;
+
+            }
+
+            if (
+                window.productMediaRegistry
+                    .model3dObjectUrl
+            ) {
+
+                URL.revokeObjectURL(
+                    window.productMediaRegistry
+                        .model3dObjectUrl
+                );
+
+            }
+
+            const objectUrl =
+                URL.createObjectURL(file);
+
+            window.productMediaRegistry
+                .model3dObjectUrl = objectUrl;
+
+            window.productMediaRegistry
+                .model3dFile = file;
+
+            refreshCreate3DPreview(objectUrl);
+
+        }
+    );
 
 
             $(document).ready(function() {
@@ -842,39 +1322,94 @@
 
             // Gallery Section Insert
 
-            $(document).on('click', '.remove-img', function() {
-                var id = $(this).find('input[type=hidden]').val();
-                $('#galval' + id).remove();
-                $(this).parent().parent().remove();
-            });
+$(document)
+    .off('click.apmRemoveGallery')
+    .on(
+        'click.apmRemoveGallery',
+        '.remove-img',
+        function() {
+
+    var id = $(this).find('input[type=hidden]').val();
+
+    $('#galval' + id).remove();
+
+    $(this).closest('.col-sm-6').remove();
+
+    const imageUrl =
+    window.productMediaRegistry.galleryImages[id];
+
+if (
+    imageUrl &&
+    imageUrl.indexOf('blob:') === 0
+) {
+
+    URL.revokeObjectURL(imageUrl);
+
+}
+
+window.productMediaRegistry.galleryImages[id] = null;
+
+    syncHotspotBaseImages();
+
+});
 
             $(document).on('click', '#prod_gallery', function() {
                 $('#uploadgallery').click();
                 $('.selected-image .row').html('');
-                $('#geniusform').find('.removegal').val(0);
+                $('#geniusform .removegal').remove();
             });
 
 
-            $("#uploadgallery").change(function() {
+            $(document)
+    .off('change.apmGalleryUpload')
+    .on(
+        'change.apmGalleryUpload',
+        '#uploadgallery',
+        function(e) {
                 var total_file = document.getElementById("uploadgallery").files.length;
-                for (var i = 0; i < total_file; i++) {
-                    $('.selected-image .row').append('<div class="col-sm-6">' +
-                        '<div class="img gallery-img">' +
-                        '<span class="remove-img"><i class="fas fa-times"></i>' +
-                        '<input type="hidden" value="' + i + '">' +
-                        '</span>' +
-                        '<a href="' + URL.createObjectURL(event.target.files[i]) + '" target="_blank">' +
-                        '<img src="' + URL.createObjectURL(event.target.files[i]) +
-                        '" alt="gallery image">' +
-                        '</a>' +
-                        '</div>' +
-                        '</div> '
-                    );
-                    $('#geniusform').append('<input type="hidden" name="galval[]" id="galval' + i +
-                        '" class="removegal" value="' + i + '">')
-                }
+const startIndex =
+    window.productMediaRegistry.galleryImages.length;
 
-            });
+for (var i = 0; i < total_file; i++) {
+
+    const objectUrl = URL.createObjectURL(
+        e.target.files[i]
+    );
+
+    window.productMediaRegistry.galleryObjectUrls.push(
+    objectUrl
+);
+
+window.productMediaRegistry.galleryImages.push(
+    objectUrl
+);
+
+    $('.selected-image .row').append(
+        '<div class="col-sm-6">' +
+            '<div class="img gallery-img">' +
+                '<span class="remove-img">' +
+                    '<i class="fas fa-times"></i>' +
+                    '<input type="hidden" value="' + (startIndex + i) + '">' +
+                '</span>' +
+                '<a href="' + objectUrl + '" target="_blank">' +
+                    '<img src="' + objectUrl + '" alt="gallery image">' +
+                '</a>' +
+            '</div>' +
+        '</div>'
+    );
+
+    $('#geniusform').append(
+        '<input type="hidden" ' +
+        'name="galval[]" ' +
+        'id="galval' + (startIndex + i) + '" ' +
+        'class="removegal" ' +
+        'value="' + (startIndex + i) + '">'
+    );
+}
+
+syncHotspotBaseImages();
+
+});
 
             // Gallery Section Insert Ends
 
@@ -888,6 +1423,57 @@
             "use strict";
 
             $('.cropme').simpleCropper();
+
+            $(document)
+    .off('change.apmFeaturePhoto')
+    .on('change.apmFeaturePhoto', '#feature_photo', function() {
+
+        const featureImage = $(this).val();
+
+if (!featureImage) {
+
+    window.productMediaRegistry.featureImage = null;
+
+    syncHotspotBaseImages();
+
+    return;
+}
+
+        if (
+            window.productMediaRegistry.featureImage === featureImage
+        ) {
+            return;
+        }
+
+        window.productMediaRegistry.featureImage = featureImage;
+
+        syncHotspotBaseImages();
+
+    });
+
+
+
+$(window).on('beforeunload', function () {
+
+    if (
+    window.productMediaRegistry
+        .model3dObjectUrl
+) {
+
+    URL.revokeObjectURL(
+        window.productMediaRegistry
+            .model3dObjectUrl
+    );
+
+}
+
+    window.productMediaRegistry.galleryObjectUrls.forEach(function(url) {
+    URL.revokeObjectURL(url);
+});
+
+    window.productMediaRegistry.galleryObjectUrls = [];
+
+});
 
         })(jQuery);
 
@@ -903,4 +1489,14 @@
 
 
     @include('partials.admin.product.product-scripts')
+
+    <script type="text/javascript">
+        (function($) {
+            "use strict";
+            // Ensure CSRF token is sent with all AJAX calls (required by media panel if JS is added later).
+            $.ajaxSetup({
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+            });
+        })(jQuery);
+    </script>
 @endsection

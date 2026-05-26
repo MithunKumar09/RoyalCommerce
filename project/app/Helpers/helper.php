@@ -31,3 +31,30 @@ function addon($name)
 
     return false;
 }
+
+function versioned_asset($path)
+{
+    $fullPath = public_path($path);
+    if (file_exists($fullPath)) {
+        $version = filemtime($fullPath);
+        return asset($path) . '?v=' . $version;
+    }
+    return asset($path);
+}
+
+/**
+ * Return asset URL via CDN if configured, otherwise Laravel's asset().
+ *
+ * @param string $path
+ * @return string
+ */
+function cdn_asset($path)
+{
+    $cdn = env('CDN_URL');
+    if ($cdn) {
+        $p = ltrim($path, '/');
+        return rtrim($cdn, '/') . '/' . $p;
+    }
+
+    return asset($path);
+}

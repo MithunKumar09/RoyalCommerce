@@ -1,6 +1,10 @@
+{{-- project/resources/views/frontend/product.blade.php --}}
 @extends('layouts.front')
 
 @section('content')
+<script>
+window.mainurl = '{{ url("/") }}';
+</script>
 @php
     /**
      * Frontend normalization (no backend/DB changes)
@@ -23,12 +27,20 @@
     // 360°
     $v360Enabled = isset($v360Raw['enabled']) && (int)$v360Raw['enabled'] === 1;
     $v360FrameCount = isset($v360Raw['frame_count']) ? (int)$v360Raw['frame_count'] : 0;
-    $v360ManifestUrl = isset($v360Raw['manifest']) && is_string($v360Raw['manifest']) ? $v360Raw['manifest'] : null;
+    // $v360ManifestUrl = isset($v360Raw['manifest']) && is_string($v360Raw['manifest']) ? $v360Raw['manifest'] : null;
+    $v360ManifestUrl = isset($v360Raw['manifest'])
+    ? \App\Helpers\MediaUrl::normalize($v360Raw['manifest'])
+    : null;
+
     $has360 = $v360Enabled && $v360FrameCount > 0;
 
     // 3D
     $model3dEnabled = isset($model3dRaw['enabled']) && (int)$model3dRaw['enabled'] === 1;
-    $model3dSrc = isset($model3dRaw['src']) && is_string($model3dRaw['src']) ? $model3dRaw['src'] : null;
+    // $model3dSrc = isset($model3dRaw['src']) && is_string($model3dRaw['src']) ? $model3dRaw['src'] : null;
+    $model3dSrc = isset($model3dRaw['src'])
+    ? \App\Helpers\MediaUrl::normalize($model3dRaw['src'])
+    : null;
+
     $model3dViewer = (isset($model3dRaw['viewer']) && is_array($model3dRaw['viewer'])) ? $model3dRaw['viewer'] : [];
     $has3D = $model3dEnabled && !empty($model3dSrc);
 
@@ -186,12 +198,12 @@
             </ol>
         </nav>
 
-        <!-- Product Image Gallery - Single Row (Full Width) -->
-        <div class="row mb-5">
-            <div class="col-12">
+        <!-- Product Gallery + Purchase Card (side-by-side like reference) -->
+        <div class="row g-4 align-items-start mb-5">
+            <div class="col-12 col-lg-8">
                 <div class="product-gallery-wrapper">
                     <div class="product-gallery-hero-card">
-                        <!-- View controls moved outside image container -->
+                        <!-- View controls -->
                         <div class="product-image-view-controls">
                                 @if($media['v360']['available'])
                                 <button type="button" class="view-control-btn" data-bs-toggle="modal" data-bs-target="#modal360View" title="View 360°">
@@ -221,55 +233,63 @@
                         </div>
 
                         <div class="product-main-image-container" id="productMainImageContainer">
-
-                            <!-- Main Image with Hotspots -->
                             <div class="main-image-wrapper position-relative">
-                                <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}" 
-                                     alt="{{ $productt->name }}" 
-                                     class="main-product-image" 
+                                <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}"
+                                     alt="{{ $productt->name }}"
+                                     class="main-product-image"
                                      id="mainProductImage">
-                                
-                                <!-- Hotspots Overlay -->
+
                                 @if($media['hotspots']['enabled'] && !empty($media['hotspots']['items_image']))
                                 <div class="hotspots-overlay">
                                     @foreach($media['hotspots']['items_image'] as $index => $hotspot)
-                                        <div class="hotspot-dot" 
-                                             style="left: {{ $hotspot['x_percent'] }}%; top: {{ $hotspot['y_percent'] }}%;"
-                                             data-hotspot-index="{{ $index }}"
-                                             data-hotspot-id="{{ $hotspot['id'] ?? '' }}"
-                                             data-hotspot-target="image"
-                                             data-hotspot-source="{{ $media['hotspots']['target_image'] ?? '' }}"
-                                             data-label="{{ $hotspot['label'] ?? 'Hotspot' }}"
-                                             data-desc="{{ $hotspot['description'] ?? '' }}"
-                                             data-image="{{ $hotspot['image_url'] ?? '' }}">
-                                            <span class="dot-pulse"></span>
-                                            <div class="hotspot-tooltip">
-                                                <strong>{{ $hotspot['label'] ?? 'Hotspot' }}</strong>
-                                                @if(!empty($hotspot['description']))
-                                                <p>{{ $hotspot['description'] }}</p>
-                                                @endif
-                                                @if(!empty($hotspot['image_url']))
-                                                <div class="hotspot-tooltip-media">
-                                                    @php
-                                                        $hotspotImageUrl = $hotspot['image_url'];
-                                                        // Normalize URL: if it's a relative path, make it absolute
-                                                        if (!filter_var($hotspotImageUrl, FILTER_VALIDATE_URL)) {
-                                                            // If it starts with /, use asset helper; otherwise prepend /
-                                                            $hotspotImageUrl = $hotspotImageUrl[0] === '/' 
-                                                                ? asset(ltrim($hotspotImageUrl, '/')) 
-                                                                : asset($hotspotImageUrl);
-                                                        }
-                                                    @endphp
-                                                    <img src="{{ $hotspotImageUrl }}" alt="{{ $hotspot['label'] ?? 'Hotspot' }}">
-                                                </div>
-                                                @endif
-                                            </div>
-                                        </div>
+<div class="hotspot-dot"
+     style="left: {{ $hotspot['x_percent'] }}%; top: {{ $hotspot['y_percent'] }}%;"
+     data-hotspot-index="{{ $index }}">
+    
+    <span class="dot-pulse"></span>
+
+    <div class="hotspot-tooltip">
+        <strong>{{ $hotspot['label'] ?? 'Hotspot' }}</strong>
+
+        @if(!empty($hotspot['description']))
+            <p>{{ $hotspot['description'] }}</p>
+        @endif
+
+        @if(!empty($hotspot['image_url']))
+            @php
+                // Normalize hotspot image URLs using MediaUrl helper (production-safe)
+                $hotspotImageUrl = isset($hotspot['image_url']) ? \App\Helpers\MediaUrl::normalize($hotspot['image_url']) : '';
+            @endphp
+
+            <div class="hotspot-tooltip-media">
+                <img
+                    src="{{ $hotspotImageUrl }}"
+                    alt="{{ $hotspot['label'] }}"
+                    class="hotspot-tooltip-image"
+                    data-hotspot-image="{{ $hotspotImageUrl }}">
+
+                {{-- Camera focus icon (ONLY HERE) --}}
+                <button
+                    type="button"
+                    class="hotspot-tooltip-focus-btn"
+                    aria-label="View image"
+                    data-image="{{ $hotspotImageUrl }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="3" width="18" height="18" rx="3"
+                              stroke="white" stroke-width="1.5"/>
+                        <circle cx="12" cy="12" r="4"
+                                stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </button>
+            </div>
+        @endif
+    </div>
+</div>
+
                                     @endforeach
                                 </div>
                                 @endif
 
-                                <!-- Image Navigation Arrows -->
                                 <button class="img-nav-arrow img-nav-prev" type="button" aria-label="Previous image">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                         <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -283,13 +303,10 @@
                             </div>
                         </div>
 
-                        <!-- Thumbnail Strip -->
                         <div class="product-thumbnails-wrapper">
                             <div class="thumbnail-scroll-container">
                                 <div class="thumbnails-strip" id="thumbnailsStrip">
-                                    @php
-                                        $mainThumbVideo = $mainVideoUrl;
-                                    @endphp
+                                    @php $mainThumbVideo = $mainVideoUrl; @endphp
                                     <div class="thumbnail-item active" data-image-index="0" data-hotspot-source="feature" @if($mainThumbVideo) data-video-url="{{ $mainThumbVideo }}" @endif>
                                         @if($mainThumbVideo)
                                             <div class="video-thumb-overlay">
@@ -301,9 +318,7 @@
                                         <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : asset('assets/images/products/' . $productt->photo) }}" alt="Thumbnail">
                                     </div>
                                     @foreach($productt->galleries as $index => $gal)
-                                    @php
-                                        $galleryVideo = $videoMap['gallery:' . $gal->id] ?? null;
-                                    @endphp
+                                    @php $galleryVideo = $videoMap['gallery:' . $gal->id] ?? null; @endphp
                                     <div class="thumbnail-item" data-image-index="{{ $index + 1 }}" data-hotspot-source="gallery_{{ $gal->id }}" @if($galleryVideo) data-video-url="{{ $galleryVideo }}" @endif>
                                         @if($galleryVideo)
                                             <div class="video-thumb-overlay">
@@ -336,6 +351,85 @@
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                     <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <!-- Purchase Card column (moved next to gallery) -->
+                <div class="product-pricing-actions-figma">
+                    <div class="product-sidebar-card">
+                        <div class="pricing-section">
+                            <div class="price-main">
+                                <span class="current-price" id="sizeprice">{{ $productt->showPrice() }}</span>
+                                @if($productt->previous_price && $productt->showPreviousPrice() != '0')
+                                <span class="original-price"><del>{{ $productt->showPreviousPrice() }}</del></span>
+                                @endif
+                                @if($productt->offPercentage() && round($productt->offPercentage()) > 0)
+                                <span class="discount-badge">{{ round($productt->offPercentage()) }}% OFF</span>
+                                @endif
+                            </div>
+                            <p class="tax-info">Inclusive of all taxes</p>
+                        </div>
+
+                        <div class="stock-status-section">
+                            @if($productt->type == 'Physical')
+                                @if($productt->emptyStock())
+                                <div class="stock-status out-of-stock">
+                                    <span class="status-icon"></span>
+                                    <span>Out of Stock</span>
+                                </div>
+                                @else
+                                <div class="stock-status in-stock">
+                                    <span class="status-icon"></span>
+                                    <span>In Stock</span>
+                                </div>
+                                <p class="ready-ship">Ready to Ship</p>
+                                @endif
+                            @endif
+                        </div>
+
+                        @if($productt->type == 'Physical' && !$productt->emptyStock())
+                        <div class="quantity-section">
+                            <label>Quantity:</label>
+                            <div class="quantity-input-group">
+                                <button type="button" class="qty-btn qty-minus" id="qtyMinus">-</button>
+                                <input type="text" class="qty-input" id="order-qty" value="{{ $productt->minimum_qty ?? 1 }}" readonly>
+                                <button type="button" class="qty-btn qty-plus" id="qtyPlus">+</button>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($productt->type == 'Physical')
+                        <div class="delivery-check-section">
+                            <label>Check Delivery</label>
+                            <div class="delivery-input-group">
+                                <input type="text" class="form-control" id="pinCodeInput" placeholder="Enter PIN code" maxlength="6">
+                                <button type="button" class="btn-check-delivery" id="checkDeliveryBtn">Check</button>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="cta-buttons-section">
+                            <button type="button" class="btn-buy-now w-100" id="addtobycard">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 6px;">
+                                    <path d="M9 0L11.6942 7.7918H18L12.3593 12.9164L15.0534 21.2082L9 16.0836L2.94658 21.2082L5.64074 12.9164L0 7.7918H6.30583L9 0Z" fill="currentColor"/>
+                                </svg>
+                                Buy Now
+                            </button>
+                            <button type="button" class="btn-add-cart w-100" id="addtodetailscart">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 6px;">
+                                    <path d="M5 2H3C2.44772 2 2 2.44772 2 3V4M2 4L3 14H15L16 4M2 4H4M5 6H15M15 6L14 16H4L3 6M15 6V13C15 14.1046 14.1046 15 13 15H5C3.89543 15 3 14.1046 3 13V6" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                                </svg>
+                                Add to Cart
+                            </button>
+                            <button type="button" class="btn-add-wishlist" id="addToWishlist">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 3.5C7.5 1.5 4 1.5 2.5 4C1 6.5 1.5 10 4 12.5L10 18L16 12.5C18.5 10 19 6.5 17.5 4C16 1.5 12.5 1.5 10 3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                </svg>
+                                Add to Wishlist
                             </button>
                         </div>
                     </div>
@@ -530,19 +624,173 @@
                             </div>
                         </div>
 
-                        <!-- FAQ's Tab -->
-                        <div class="tab-pane fade" id="faqs-pane" role="tabpanel">
-                            <div class="faqs-content">
-                                <p class="text-muted">FAQs section content will be displayed here.</p>
-                            </div>
+{{-- Product FAQ Tab --}}
+<div class="tab-pane fade" id="faqs-pane" role="tabpanel" aria-labelledby="faqs-tab">
+
+    <div class="product-faq-wrapper">
+
+        <h4 class="mb-3">Frequently Asked Questions</h4>
+
+        @if($productFaqs->count())
+            <div class="accordion" id="productFaqAccordion">
+
+                @foreach($productFaqs as $index => $faq)
+                    <div class="card">
+                        <div class="card-header" id="faqHeading{{ $index }}">
+                            <h6 class="mb-0">
+                                <button class="btn btn-link collapsed"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#faqCollapse{{ $index }}"
+        aria-expanded="false"
+        aria-controls="faqCollapse{{ $index }}">
+
+                                    {{ $faq->title }}
+                                </button>
+                            </h6>
                         </div>
 
-                        <!-- RFQ Tab -->
-                        <div class="tab-pane fade" id="rfq-pane" role="tabpanel">
-                            <div class="rfq-content">
-                                <p class="text-muted">Request for Quote form will be displayed here.</p>
+<div id="faqCollapse{{ $index }}"
+     class="accordion-collapse collapse"
+     data-bs-parent="#productFaqAccordion">
+                            <div class="card-body">
+                                {!! nl2br(e($faq->details)) !!}
                             </div>
                         </div>
+                    </div>
+                @endforeach
+
+            </div>
+        @else
+            <p class="text-muted">
+                No FAQs available for this product yet.
+            </p>
+        @endif
+
+    </div>
+
+</div>
+
+
+<!-- RFQ Tab -->
+<div class="tab-pane fade" id="rfq-pane" role="tabpanel">
+    <div class="rfq-wrapper">
+        <div class="rfq-card">
+            <h2 class="rfq-title">Request a Quote</h2>
+            <p class="rfq-subtitle">
+                Ensure with high professionalism, we are capable of offering pixel-perfect
+                web & mobile application development, third-party integrations and solutions.
+            </p>
+
+            <form id="rfqForm" enctype="multipart/form-data">
+                @csrf
+
+                <!-- Auto bindings -->
+                <input type="hidden" name="product_id" value="{{ $productt->id }}">
+                <input type="hidden" name="product_name" value="{{ $productt->name }}">
+                <input type="hidden" name="sku" value="{{ $productt->sku }}">
+                <input type="hidden" name="user_id" value="{{ Auth::check() ? Auth::id() : '' }}">
+
+                <div class="row g-3">
+
+                    <!-- First Name -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">First Name</label>
+                        <input type="text" name="first_name" class="rfq-input" placeholder="Type your name" required>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Last Name</label>
+                        <input type="text" name="last_name" class="rfq-input" placeholder="Type your name">
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Phone Number</label>
+                        <input type="text" name="phone" class="rfq-input" placeholder="+91 9876543210">
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Email</label>
+                        <input type="email" name="email" class="rfq-input" placeholder="example@email.com" required>
+                    </div>
+
+                    <!-- Product Type -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Product Type</label>
+                        <input type="text" name="product_type" class="rfq-input" placeholder="Product type">
+                    </div>
+
+                    <!-- Budget -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Estimate Budget</label>
+                        <input type="text" name="estimate_budget" class="rfq-input" placeholder="Estimated budget">
+                    </div>
+
+                    <!-- Company -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Company Name</label>
+                        <input type="text" name="company_name" class="rfq-input" placeholder="Company name">
+                    </div>
+
+                    <!-- Country -->
+                    <div class="col-md-6">
+                        <label class="rfq-label">Country</label>
+                        <select name="country" class="rfq-input">
+                            <option value="">Select country</option>
+                            <option value="India">India</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                        </select>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="col-12">
+                        <label class="rfq-label">Attachment</label>
+                        <div class="rfq-upload">
+                            <p>Drag file here or click the button below</p>
+
+                            <input
+                                type="file"
+                                name="attachment"
+                                id="rfqFile"
+                                hidden
+                                accept=".pdf,.doc,.docx,.jpg,.png">
+
+                            <button type="button" class="rfq-upload-btn" onclick="document.getElementById('rfqFile').click()">
+                                Upload File
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="col-12">
+                        <label class="rfq-label">Message</label>
+                        <textarea
+                            name="message"
+                            class="rfq-textarea"
+                            rows="4"
+                            minlength="10"
+                            placeholder="Type your message"
+                            required></textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="col-12 text-end">
+                        <button type="button" class="rfq-submit-btn">
+                            Request a quote
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
                     </div>
                 </div>
             </div>
@@ -550,85 +798,7 @@
             <!-- Right Column: Pricing & Actions Sidebar -->
             <div class="col-12 col-md-4 col-lg-4">
                 <div class="product-pricing-actions-figma">
-                    <!-- Purchase Card (single cohesive card like reference) -->
-                    <div class="product-sidebar-card">
-                        <!-- Pricing -->
-                        <div class="pricing-section">
-                            <div class="price-main">
-                                <span class="current-price" id="sizeprice">{{ $productt->showPrice() }}</span>
-                                @if($productt->previous_price && $productt->showPreviousPrice() != '0')
-                                <span class="original-price"><del>{{ $productt->showPreviousPrice() }}</del></span>
-                                @endif
-                                @if($productt->offPercentage() && round($productt->offPercentage()) > 0)
-                                <span class="discount-badge">{{ round($productt->offPercentage()) }}% OFF</span>
-                                @endif
-                            </div>
-                            <p class="tax-info">Inclusive of all taxes</p>
-                        </div>
-
-                        <!-- Stock Status -->
-                        <div class="stock-status-section">
-                            @if($productt->type == 'Physical')
-                                @if($productt->emptyStock())
-                                <div class="stock-status out-of-stock">
-                                    <span class="status-icon"></span>
-                                    <span>Out of Stock</span>
-                                </div>
-                                @else
-                                <div class="stock-status in-stock">
-                                    <span class="status-icon"></span>
-                                    <span>In Stock</span>
-                                </div>
-                                <p class="ready-ship">Ready to Ship</p>
-                                @endif
-                            @endif
-                        </div>
-
-                        <!-- Quantity Selector -->
-                        @if($productt->type == 'Physical' && !$productt->emptyStock())
-                        <div class="quantity-section">
-                            <label>Quantity:</label>
-                            <div class="quantity-input-group">
-                                <button type="button" class="qty-btn qty-minus" id="qtyMinus">-</button>
-                                <input type="text" class="qty-input" id="order-qty" value="{{ $productt->minimum_qty ?? 1 }}" readonly>
-                                <button type="button" class="qty-btn qty-plus" id="qtyPlus">+</button>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Check Delivery -->
-                        @if($productt->type == 'Physical')
-                        <div class="delivery-check-section">
-                            <label>Check Delivery</label>
-                            <div class="delivery-input-group">
-                                <input type="text" class="form-control" id="pinCodeInput" placeholder="Enter PIN code" maxlength="6">
-                                <button type="button" class="btn-check-delivery" id="checkDeliveryBtn">Check</button>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- CTA Buttons -->
-                        <div class="cta-buttons-section">
-                            <button type="button" class="btn-buy-now w-100" id="addtobycard">
-                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 6px;">
-                                    <path d="M9 0L11.6942 7.7918H18L12.3593 12.9164L15.0534 21.2082L9 16.0836L2.94658 21.2082L5.64074 12.9164L0 7.7918H6.30583L9 0Z" fill="currentColor"/>
-                                </svg>
-                                Buy Now
-                            </button>
-                            <button type="button" class="btn-add-cart w-100" id="addtodetailscart">
-                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right: 6px;">
-                                    <path d="M5 2H3C2.44772 2 2 2.44772 2 3V4M2 4L3 14H15L16 4M2 4H4M5 6H15M15 6L14 16H4L3 6M15 6V13C15 14.1046 14.1046 15 13 15H5C3.89543 15 3 14.1046 3 13V6" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                                </svg>
-                                Add to Cart
-                            </button>
-                            <button type="button" class="btn-add-wishlist" id="addToWishlist">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                    <path d="M10 3.5C7.5 1.5 4 1.5 2.5 4C1 6.5 1.5 10 4 12.5L10 18L16 12.5C18.5 10 19 6.5 17.5 4C16 1.5 12.5 1.5 10 3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                                </svg>
-                                Add to Wishlist
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Purchase card moved next to gallery (avoid duplicate IDs). Keep only seller + downloads here. -->
 
                     <!-- Seller Information Card -->
                     <div class="seller-info-card">
@@ -799,6 +969,18 @@
 <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
 <input type="hidden" id="affilate_user" value="{{ $affilate_user ?? 0 }}">
 
+
+{{-- Hotspot Image Viewer Modal --}}
+<div class="hotspot-image-modal" id="hotspotImageModal" aria-hidden="true">
+    <div class="hotspot-image-modal-backdrop"></div>
+
+    <div class="hotspot-image-modal-content">
+        <button class="hotspot-image-modal-close" aria-label="Close">&times;</button>
+        <img src="" alt="Hotspot Detail Image" id="hotspotModalImage">
+    </div>
+</div>
+
+
 @endsection
 
 @section('script')
@@ -899,18 +1081,78 @@
     applyImageHotspotVisibility(imageSources[currentImageIndex] || 'feature');
     updateVideoControl(currentImageIndex);
 
-    // Hotspot interactions
-    $('.hotspot-dot').on('click', function() {
-        const tooltip = $(this).find('.hotspot-tooltip');
-        $('.hotspot-tooltip').not(tooltip).hide();
-        tooltip.toggle();
-    });
+// ---------------- HOTSPOT TOOLTIP ----------------
+$('.hotspot-dot').on('click', function (e) {
+    if ($(e.target).closest('.hotspot-tooltip').length) {
+        return;
+    }
 
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('.hotspot-dot').length) {
-            $('.hotspot-tooltip').hide();
+    e.stopPropagation();
+
+    const $dot = $(this);
+    const tooltip = $dot.find('.hotspot-tooltip');
+
+    $('.hotspot-dot').not($dot).removeClass('active-hotspot');
+    $('.hotspot-tooltip').not(tooltip).hide();
+
+    $dot.toggleClass('active-hotspot');
+    tooltip.toggle();
+
+    if (!tooltip.is(':visible')) {
+        $dot.removeClass('active-hotspot');
+    }
+});
+
+
+$(document).on('click', function () {
+    $('.hotspot-tooltip').hide();
+});
+
+// ---------------- HOTSPOT IMAGE MODAL ----------------
+$(document).on(
+    'click',
+    '.hotspot-tooltip-focus-btn, .hotspot-tooltip-image',
+    function (e) {
+        e.stopPropagation();
+
+        // Prefer server-normalized `data-hotspot-image`, then data-image, then any src nested inside
+        let img = $(this).data('hotspot-image') || $(this).data('image') || $(this).attr('data-hotspot-image') || $(this).attr('data-image') || $(this).attr('src') || '';
+
+        if (!img) {
+            // Fallback: check nested image element or nearest hotspot-dot
+            img = $(this).find('img').data('hotspot-image') || $(this).find('img').attr('src') || $(this).closest('.hotspot-dot').find('img').data('hotspot-image') || $(this).closest('.hotspot-dot').find('img').attr('src') || '';
         }
-    });
+
+        if (!img) return;
+
+        $('#hotspotModalImage').attr('src', img);
+        $('#hotspotImageModal').addClass('active').attr('aria-hidden', 'false');
+    }
+);
+
+$(document).on(
+    'click',
+    '.hotspot-image-modal-close, .hotspot-image-modal-backdrop',
+    function () {
+        $('#hotspotImageModal')
+            .removeClass('active')
+            .attr('aria-hidden', 'true');
+        $('#hotspotModalImage').attr('src', '');
+    }
+);
+
+$(document).on('keydown', function (e) {
+    if (e.key === 'Escape') {
+        $('#hotspotImageModal').removeClass('active');
+        $('#hotspotModalImage').attr('src', '');
+    }
+});
+
+// Prevent tooltip clicks from closing themselves
+$(document).on('click', '.hotspot-tooltip', function (e) {
+    e.stopPropagation();
+});
+
 
     // Quantity controls
     $('#qtyPlus').on('click', function() {
@@ -975,6 +1217,54 @@
         const productId = $(this).data('product-id');
         if (!productId) return;
         window.location.href = "{{ url('/item') }}/" + productId;
+    });
+
+$(document).on('click', '.rfq-submit-btn', function (e) {
+        e.preventDefault();
+
+        let form = $('#rfqForm')[0];
+        let formData = new FormData(form);
+
+            // 🔍 DEBUG: log all form data
+    console.log('--- RFQ FormData ---');
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ':', pair[1]);
+    }
+    console.log('--------------------');
+
+        $.ajax({
+            url: "{{ route('rfq.submit') }}",
+            method: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            beforeSend: function () {
+                $('.rfq-submit-btn').prop('disabled', true).text('Submitting...');
+            },
+            success: function (res) {
+                if (res.status === 1) {
+                    toastr.success(res.message);
+                    $('#rfqForm')[0].reset();
+                } else {
+                    toastr.error(res.message);
+                }
+            },
+            error: function (xhr) {
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    Object.values(xhr.responseJSON.errors).forEach(err => {
+                        toastr.error(err[0]);
+                    });
+                } else {
+                    toastr.error('Something went wrong. Please try again.');
+                }
+            },
+            complete: function () {
+                $('.rfq-submit-btn').prop('disabled', false).text('Request a quote');
+            }
+        });
     });
 
 

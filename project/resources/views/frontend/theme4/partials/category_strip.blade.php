@@ -28,7 +28,7 @@
                        href="{{ $cat->slug ? route('front.category', $cat->slug) : '#' }}">
                         <div class="t4-cat__icon {{ $iconClass }}">
                             @if (!empty($cat->image))
-                                <img src="{{ asset('assets/images/categories/' . $cat->image) }}" alt="{{ $cat->name }}">
+                                <img src="{{ asset('assets/images/categories/' . $cat->image) }}" alt="{{ $cat->name }}" loading="lazy">
                             @else
                                 <span aria-hidden="true"></span>
                             @endif

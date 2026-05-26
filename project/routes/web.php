@@ -58,6 +58,19 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN NOTIFICATION SECTION ENDS ------------
 
+    Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
+
+    Route::get('/rfqs', [\App\Http\Controllers\Admin\RfqController::class, 'index'])
+        ->name('admin.rfqs.index');
+
+    Route::get('/rfqs/{rfq}', [\App\Http\Controllers\Admin\RfqController::class, 'show'])
+        ->name('admin.rfqs.show');
+
+    Route::post('/rfqs/{rfq}/status', [\App\Http\Controllers\Admin\RfqController::class, 'updateStatus'])
+        ->name('admin.rfqs.status');
+
+});
+
     //------------ ADMIN DASHBOARD & PROFILE SECTION ------------
     Route::get('/', 'Admin\DashboardController@index')->name('admin.dashboard');
     Route::get('/profile', 'Admin\DashboardController@profile')->name('admin.profile');
@@ -1258,6 +1271,9 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/wishlist/add/{id}', 'User\WishlistController@addwish')->name('user-wishlist-add');
         Route::get('/wishlist/remove/{id}', 'User\WishlistController@removewish')->name('user-wishlist-remove');
         // User Wishlist Ends
+
+        Route::post('/front/rfq-submit', [\App\Http\Controllers\User\RfqController::class, 'submit'])
+    ->name('rfq.submit');
 
         // User Review
         Route::post('/review/submit', 'User\UserController@reviewsubmit')->name('front.review.submit');

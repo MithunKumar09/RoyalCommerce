@@ -1,4 +1,15 @@
-{{-- admin.blade.php --}}
+{{--partials/admin-role/admin.blade.php --}}
+
+{{-- ✅ RFQ (visible to all admins – no permission check) --}}
+<li>
+    <a href="{{ route('admin.rfqs.index') }}" class="wave-effect">
+        <i class="fas fa-file-invoice"></i>
+        {{ __('RFQ Requests') }}
+    </a>
+</li>
+{{-- ✅ RFQ END --}}
+
+
 <li>
     <a href="#order" class="accordion-toggle wave-effect" data-toggle="collapse" aria-expanded="false"><i
             class="fas fa-hand-holding-usd"></i>{{ __('Orders') }}</a>
@@ -24,6 +35,29 @@
 
     </ul>
 </li>
+
+
+{{-- TEMP: RFQ (Admin access) --}}
+@if(auth()->guard('admin')->check())
+<li>
+    <a href="#rfqMenu" class="accordion-toggle wave-effect" data-toggle="collapse" aria-expanded="false">
+        <i class="fas fa-file-invoice"></i>{{ __('RFQs') }}
+    </a>
+
+    <ul class="collapse list-unstyled
+        {{ request()->routeIs('admin.rfqs.*') ? 'show' : '' }}"
+        id="rfqMenu" data-parent="#accordion">
+
+        <li class="{{ request()->routeIs('admin.rfqs.index') ? 'active' : '' }}">
+            <a href="{{ route('admin.rfqs.index') }}">
+                {{ __('All RFQs') }}
+            </a>
+        </li>
+    </ul>
+</li>
+@endif
+
+
 
 <li>
     <a href="#menu1" class="accordion-toggle wave-effect" data-toggle="collapse" aria-expanded="false">
@@ -91,6 +125,8 @@
         </li>
     </ul>
 </li>
+
+
 
 <li>
     <a href="#menu2" class="accordion-toggle wave-effect" data-toggle="collapse" aria-expanded="false">

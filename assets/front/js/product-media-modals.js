@@ -1,3 +1,4 @@
+// assets/front/js/product-media-modals.js
 /* Product media modals (360 / 3D / YouTube) - lazy init
  * Loaded ONLY on product page.
  */
@@ -413,7 +414,7 @@
 
   function fetchManifest(url) {
     const resolvedUrl = resolveMediaUrl(url);
-    return fetch(resolvedUrl, { credentials: 'same-origin' }).then((r) => {
+    return fetch(resolvedUrl).then((r) => {
       if (!r.ok) throw new Error('Manifest fetch failed');
       return r.json();
     });

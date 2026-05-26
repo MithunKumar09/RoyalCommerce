@@ -257,7 +257,17 @@ class CatalogController extends FrontBaseController
             };
 
             $makeBaseQuery = function () use ($applyTheme4Filters, $cat, $subcat, $childcat, $type, $search, $minprice, $maxprice, $request) {
-                $query = Product::with('user')
+                /**
+                 * PERFORMANCE FIX: Strict select() of needed fields only
+                 * Reduces memory footprint and speeds up serialization
+                 */
+                $query = Product::select([
+                    'id', 'name', 'slug', 'thumbnail', 'price','previous_price','attributes',
+                    'category_id', 'subcategory_id', 'childcategory_id',
+                    'user_id', 'status', 'is_discount', 'discount_date',
+                    'stock', 'created_at'
+                ])
+                    ->with('user:id,is_vendor') // Eager load with limited fields only
                     ->when($cat, function ($q) use ($cat) {
                         return $q->where('category_id', $cat->id);
                     })
@@ -267,10 +277,15 @@ class CatalogController extends FrontBaseController
                     ->when($childcat, function ($q) use ($childcat) {
                         return $q->where('childcategory_id', $childcat->id);
                     })
-                    ->when($type, function ($q) {
-                        return $q->whereStatus(1)->whereIsDiscount(1)
-                            ->where('discount_date', '>=', date('Y-m-d'));
-                    })
+->when($type, function ($q) {
+    $q->whereStatus(1)->whereIsDiscount(1);
+
+    if (Schema::hasColumn('products', 'discount_date')) {
+        $q->where('discount_date', '>=', now()->toDateString());
+    }
+
+    return $q;
+})
                     ->when($search, function ($q) use ($search) {
                         return $q->where(function ($sq) use ($search) {
                             $sq->where('name', 'like', '%' . $search . '%')
@@ -288,11 +303,15 @@ class CatalogController extends FrontBaseController
                     ->withAvg('ratings', 'rating');
 
                 // Dynamic attribute filters (same logic as legacy)
-                $query->where(function ($q) use ($cat, $subcat, $childcat, $request) {
-                    if (!empty($cat)) {
-                        foreach ($cat->attributes()->get() as $attribute) {
-                            $inname = $attribute->input_name;
-                            $chFilters = $request["$inname"];
+                // PERFORMANCE FIX: Cache attributes outside the loop to avoid N+1 queries
+                $categoryAttributes = $cat ? $cat->attributes()->get()->keyBy('input_name')->toArray() : [];
+                $subcategoryAttributes = $subcat ? $subcat->attributes()->get()->keyBy('input_name')->toArray() : [];
+                $childcategoryAttributes = $childcat ? $childcat->attributes()->get()->keyBy('input_name')->toArray() : [];
+
+                $query->where(function ($q) use ($categoryAttributes, $subcategoryAttributes, $childcategoryAttributes, $request) {
+                    if (!empty($categoryAttributes)) {
+                        foreach ($categoryAttributes as $inname => $attribute) {
+                            $chFilters = $request[$inname] ?? null;
                             if (!empty($chFilters)) {
                                 $q->where(function ($subQ) use ($chFilters) {
                                     foreach ($chFilters as $idx => $chFilter) {
@@ -307,10 +326,9 @@ class CatalogController extends FrontBaseController
                         }
                     }
 
-                    if (!empty($subcat)) {
-                        foreach ($subcat->attributes()->get() as $attribute) {
-                            $inname = $attribute->input_name;
-                            $chFilters = $request["$inname"];
+                    if (!empty($subcategoryAttributes)) {
+                        foreach ($subcategoryAttributes as $inname => $attribute) {
+                            $chFilters = $request[$inname] ?? null;
                             if (!empty($chFilters)) {
                                 $q->where(function ($subQ) use ($chFilters) {
                                     foreach ($chFilters as $idx => $chFilter) {
@@ -325,10 +343,9 @@ class CatalogController extends FrontBaseController
                         }
                     }
 
-                    if (!empty($childcat)) {
-                        foreach ($childcat->attributes()->get() as $attribute) {
-                            $inname = $attribute->input_name;
-                            $chFilters = $request["$inname"];
+                    if (!empty($childcategoryAttributes)) {
+                        foreach ($childcategoryAttributes as $inname => $attribute) {
+                            $chFilters = $request[$inname] ?? null;
                             if (!empty($chFilters)) {
                                 $q->where(function ($subQ) use ($chFilters) {
                                     foreach ($chFilters as $idx => $chFilter) {

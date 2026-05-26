@@ -1,4 +1,14 @@
+{{-- partials/admin-role/normal.blade.php --}}
 @if(Auth::guard('admin')->user()->role_id != 0)
+
+{{-- ✅ RFQ (visible to all admins – no permission check) --}}
+<li>
+    <a href="{{ route('admin.rfqs.index') }}" class="wave-effect">
+        <i class="fas fa-file-invoice"></i>
+        {{ __('RFQ Requests') }}
+    </a>
+</li>
+{{-- ✅ RFQ END --}}
 
 @if(Auth::guard('admin')->user()->sectionCheck('orders'))
 

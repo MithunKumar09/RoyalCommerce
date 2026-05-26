@@ -72,18 +72,49 @@
     return true;
   }
 
+  /**
+   * PERFORMANCE FIX: Add timeout & error handlers to all AJAX calls
+   * Prevents infinite loaders when requests fail or timeout
+   */
+  $.ajaxSetup({
+    timeout: 5000, // 5 second global timeout to prevent hanging requests
+    error: function () {
+      $(".gocover").hide(); // Hide loader on any AJAX error
+    },
+    complete: function () {
+      // Hide any loaders in complete handler (fires after success OR error)
+      setTimeout(function () {
+        if ($(".gocover").is(":visible") && !$("body").hasClass("processing")) {
+          $(".gocover").hide();
+        }
+      }, 100);
+    }
+  });
+
   //   wishlist
   $(document).on("click", ".wishlist", function (e) {
     e.preventDefault();
     const $this = $(this);
     if ($(this).data("href")) {
-      $.get($(this).data("href"), function (data) {
-        if (data[0] == 1) {
-          toastr.success(data["success"]);
-          $("#wishlist-count").html(data[1]);
-          $this.children().addClass("active");
-        } else {
-          toastr.error(data["error"]);
+      $.ajax({
+        url: $(this).data("href"),
+        type: 'GET',
+        timeout: 5000,
+        success: function (data) {
+          if (data[0] == 1) {
+            toastr.success(data["success"]);
+            $("#wishlist-count").html(data[1]);
+            $this.children().addClass("active");
+          } else {
+            toastr.error(data["error"]);
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error("Wishlist error:", error);
+          toastr.error("Failed to update wishlist. Please try again.");
+        },
+        complete: function () {
+          $(".gocover").hide();
         }
       });
     }
@@ -92,22 +123,46 @@
   $(document).on("click", ".removewishlist", function (e) {
     e.preventDefault();
     let $this = $(this);
-    $.get($(this).attr("data-href"), function (data) {
-      $("#wishlist-count").html(data[1]);
-      $this.parent().parent().parent().remove();
+    $.ajax({
+      url: $(this).attr("data-href"),
+      type: 'GET',
+      timeout: 5000,
+      success: function (data) {
+        $("#wishlist-count").html(data[1]);
+        $this.parent().parent().parent().remove();
+      },
+      error: function (xhr, status, error) {
+        console.error("Remove wishlist error:", error);
+        toastr.error("Failed to remove from wishlist. Please try again.");
+      },
+      complete: function () {
+        $(".gocover").hide();
+      }
     });
   });
 
   //   compare
   $(document).on("click", ".compare_product", function (e) {
     e.preventDefault();
-    $.get($(this).data("href"), function (data) {
-      $("#compare-count").html(data[1]);
-      $("#compare-count1").html(data[1]);
-      if (data[0] == 0) {
-        toastr.success(data["success"]);
-      } else {
-        toastr.error(data["error"]);
+    $.ajax({
+      url: $(this).data("href"),
+      type: 'GET',
+      timeout: 5000,
+      success: function (data) {
+        $("#compare-count").html(data[1]);
+        $("#compare-count1").html(data[1]);
+        if (data[0] == 0) {
+          toastr.success(data["success"]);
+        } else {
+          toastr.error(data["error"]);
+        }
+      },
+      error: function (xhr, status, error) {
+        console.error("Compare error:", error);
+        toastr.error("Failed to update compare. Please try again.");
+      },
+      complete: function () {
+        $(".gocover").hide();
       }
     });
   });
@@ -154,11 +209,23 @@
   // aDD TO FAVORITE
   $(document).on("click", ".favorite-prod", function () {
     var $this = $(this);
-    $.get($(this).data("href"), function (data) {
-      $this.attr("data-href", "");
-      $this.attr("disabled", true);
-      $this.removeClass("favorite-prod");
-      $this.html(data["icon"] + " " + data["text"]);
+    $.ajax({
+      url: $(this).data("href"),
+      type: 'GET',
+      timeout: 5000,
+      success: function (data) {
+        $this.attr("data-href", "");
+        $this.attr("disabled", true);
+        $this.removeClass("favorite-prod");
+        $this.html(data["icon"] + " " + data["text"]);
+      },
+      error: function (xhr, status, error) {
+        console.error("Favorite error:", error);
+        toastr.error("Failed to update favorite. Please try again.");
+      },
+      complete: function () {
+        $(".gocover").hide();
+      }
     });
   });
 
@@ -176,20 +243,41 @@
       return false;
     }
     e.preventDefault();
-    $.get($(this).attr("data-href"), function (data) {
-      if (data == "digital") {
-        toastr.error(lang.cart_already);
-      } else if (data[0] == 0) {
-        toastr.error(lang.cart_out);
-      } else {
-        $("#cart-count").html(data[0]);
-        $("#cart-count1").html(data[0]);
-        $("#total-cost").html(data[1]);
-        $(".cart-popup").load(mainurl + "/carts/view");
-        toastr.success(lang.cart_success);
+    
+    $(".gocover").show(); // Show loader at start
+    
+    $.ajax({
+      url: $(this).attr("data-href"),
+      type: 'GET',
+      timeout: 5000,
+      success: function (data) {
+        $(".gocover").hide();
+        if (data == "digital") {
+          toastr.error(lang.cart_already);
+        } else if (data[0] == 0) {
+          toastr.error(lang.cart_out);
+        } else {
+          $("#cart-count").html(data[0]);
+          $("#cart-count1").html(data[0]);
+          $("#total-cost").html(data[1]);
+          $(".cart-popup").load(mainurl + "/carts/view");
+          toastr.success(lang.cart_success);
+        }
+      },
+      error: function (xhr, status, error) {
+        $(".gocover").hide();
+        console.error("Add to cart error:", error);
+        if (status === "timeout") {
+          toastr.error("Request timed out. Please try again.");
+        } else {
+          toastr.error("Failed to add item to cart. Please try again.");
+        }
+      },
+      complete: function () {
+        $(".gocover").hide();
       }
     });
-    return true;
+    return false;
   });
 
   $(document).on("click", ".quantity-up", function () {
@@ -220,9 +308,13 @@
       qty++;
       $("#qty" + itemid).html(qty);
     }
+    
+    $(".gocover").show(); // Show loader at start
+    
     $.ajax({
       type: "GET",
       url: mainurl + "/addbyone",
+      timeout: 5000,
       data: {
         id: pid,
         itemid: itemid,
@@ -234,11 +326,30 @@
         if (data == 0) {
           toastr.error(lang.cart_out);
         } else {
-          $.get(mainurl + "/carts", function (response) {
-            $(".load_cart").html(response);
+          $.ajax({
+            url: mainurl + "/carts",
+            type: 'GET',
+            timeout: 5000,
+            success: function (response) {
+              $(".load_cart").html(response);
+            },
+            error: function () {
+              toastr.error("Failed to update cart. Please refresh the page.");
+            },
+            complete: function () {
+              $(".gocover").hide();
+            }
           });
         }
       },
+      error: function (xhr, status, error) {
+        $(".gocover").hide();
+        console.error("Quantity update error:", error);
+        toastr.error("Failed to update quantity. Please try again.");
+      },
+      complete: function () {
+        $(".gocover").hide();
+      }
     });
   });
 
@@ -260,6 +371,7 @@
       $(".gocover").hide();
       return false;
     } else if (qty < minimum_qty) {
+      $(".gocover").hide();
       return false;
     } else {
       $(".gocover").show();
@@ -268,6 +380,7 @@
       $.ajax({
         type: "GET",
         url: mainurl + "/reducebyone",
+        timeout: 5000,
         data: {
           id: pid,
           itemid: itemid,
@@ -275,14 +388,35 @@
           size_price: size_price,
         },
         success: function (data) {
+          $(".gocover").hide();
           if (data.qty >= 1) {
-            $.get(mainurl + "/carts", function (response) {
-              $(".load_cart").html(response);
+            $.ajax({
+              url: mainurl + "/carts",
+              type: 'GET',
+              timeout: 5000,
+              success: function (response) {
+                $(".load_cart").html(response);
+              },
+              error: function () {
+                toastr.error("Failed to update cart. Please refresh the page.");
+              },
+              complete: function () {
+                $(".gocover").hide();
+              }
             });
           } else {
+            $(".gocover").hide();
             return false;
           }
         },
+        error: function (xhr, status, error) {
+          $(".gocover").hide();
+          console.error("Quantity update error:", error);
+          toastr.error("Failed to update quantity. Please try again.");
+        },
+        complete: function () {
+          $(".gocover").hide();
+        }
       });
     }
   });
@@ -375,11 +509,12 @@
       })
       .get();
 
-    //return true;
+    $(".gocover").show(); // Show loader at start
 
     $.ajax({
       type: "GET",
       url: mainurl + "/addnumcart",
+      timeout: 5000,
       data: {
         id: pid,
         qty: qty,
@@ -394,6 +529,7 @@
         prices: prices,
       },
       success: function (data) {
+        $(".gocover").hide();
         if (data == "digital") {
           toastr.error("Already Added To Cart");
         } else if (data == 0) {
@@ -408,6 +544,18 @@
           toastr.success("Successfully Added To Cart");
         }
       },
+      error: function (xhr, status, error) {
+        $(".gocover").hide();
+        console.error("Add to cart error:", error);
+        if (status === "timeout") {
+          toastr.error("Request timed out. Please try again.");
+        } else {
+          toastr.error("Failed to add item to cart. Please try again.");
+        }
+      },
+      complete: function () {
+        $(".gocover").hide();
+      }
     });
   });
 

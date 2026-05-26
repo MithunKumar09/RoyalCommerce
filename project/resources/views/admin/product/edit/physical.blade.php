@@ -4,208 +4,7 @@
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/select2.css') }}" rel="stylesheet" />
-    <style>
-        .apm-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-        }
-        .apm-card .card-header {
-            background: #ffffff;
-            border-bottom: 1px solid #eef2f7;
-            padding: 0;
-        }
-        .apm-header-toggle {
-            width: 100%;
-            background: transparent;
-            border: 0;
-            text-align: left;
-            padding: 16px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            cursor: pointer;
-        }
-        .apm-header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .apm-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .apm-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #0f172a;
-            margin: 0;
-        }
-        .apm-subtitle {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 2px;
-        }
-        .apm-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 12px 0 6px;
-        }
-        .apm-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: #f8fafc;
-            color: #334155;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .apm-btn:hover {
-            background: #f1f5f9;
-            border-color: #cbd5f5;
-        }
-        .apm-btn.is-active {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-            color: #fff;
-            border-color: #1e3a5f;
-            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.2);
-        }
-        .apm-btn svg {
-            color: #64748b;
-        }
-        .apm-btn.is-active svg {
-            color: #fff;
-        }
-        .apm-chevron {
-            transition: transform 0.2s ease;
-        }
-        .apm-chevron.is-rotated {
-            transform: rotate(180deg);
-        }
-        .apm-accordion .card {
-            border: 0;
-            background: transparent;
-            margin: 0;
-        }
-        .apm-accordion .card-header {
-            display: none;
-        }
-        .apm-panel {
-            background: #f8fafc;
-            border: 1px dashed #e2e8f0;
-            border-radius: 10px;
-            padding: 16px;
-            margin-top: 12px;
-        }
-        .apm-footer {
-            margin-top: 14px;
-            padding-top: 10px;
-            border-top: 1px solid #eef2f7;
-            font-size: 12px;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .apm-footer svg {
-            width: 14px;
-            height: 14px;
-        }
-        .apm-media-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-top: 8px;
-        }
-        .apm-media-item {
-            display: flex;
-            gap: 16px;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            background: #fff;
-        }
-        .apm-media-thumb {
-            width: 84px;
-            height: 84px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-            flex-shrink: 0;
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .apm-media-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .apm-media-body {
-            flex: 1;
-            min-width: 0;
-        }
-        .apm-media-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 6px;
-        }
-        .apm-media-fields {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-        }
-        .apm-media-field label {
-            display: block;
-            margin-bottom: 6px;
-        }
-        .apm-media-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            margin-top: 10px;
-        }
-        .apm-media-remove {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: #475569;
-        }
-        .apm-media-current {
-            font-size: 12px;
-        }
-        @media (max-width: 991px) {
-            .apm-media-item {
-                flex-direction: column;
-            }
-            .apm-media-thumb {
-                width: 100%;
-                height: 160px;
-            }
-            .apm-media-fields {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link href="{{ asset('assets/admin/css/advanced-media.css') }}" rel="stylesheet" />
 @endsection
 @section('content')
     <div class="content-area">
@@ -246,825 +45,35 @@
                                             style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                                         </div>
 
-                                        <div class="modal fade" id="mediaVideoPreviewModal" tabindex="-1" role="dialog" aria-labelledby="mediaVideoPreviewLabel" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="mediaVideoPreviewLabel">{{ __('Media Preview') }}</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ __('Close') }}">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <video id="mediaVideoPreviewPlayer" controls style="width: 100%; max-height: 60vh; background: #0f172a;"></video>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="card apm-card">
-                                                    <div class="card-header" id="media-advanced-heading">
-                                                        <button class="apm-header-toggle" type="button"
-                                                            data-toggle="collapse" data-target="#media-advanced-collapse"
-                                                            aria-expanded="false" aria-controls="media-advanced-collapse">
-                                                            <span class="apm-header-left">
-                                                                <span class="apm-icon" aria-hidden="true">
-                                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                    </svg>
-                                                                </span>
-                                                                <span>
-                                                                    <span class="apm-title">{{ __('Advanced Product Media') }}</span>
-                                                                    <span class="apm-subtitle">{{ __('Configure interactive media experiences') }}</span>
-                                                                </span>
-                                                            </span>
-                                                            <span class="apm-subtitle">{{ __('Optional') }}</span>
-                                                        </button>
-                                                    </div>
-                                                    <div id="media-advanced-collapse" class="collapse"
-                                                        aria-labelledby="media-advanced-heading">
-                                                        <div class="card-body">
-                                                            @php
-                                                                $mediaExtra = json_decode($data->media_extra, true);
-                                                                if (!is_array($mediaExtra)) { $mediaExtra = []; }
-                                                                $v360 = isset($mediaExtra['v360']) && is_array($mediaExtra['v360']) ? $mediaExtra['v360'] : [];
-                                                                $hotspots = isset($mediaExtra['hotspots']) && is_array($mediaExtra['hotspots']) ? $mediaExtra['hotspots'] : [];
-                                                                $model3d = isset($mediaExtra['model3d']) && is_array($mediaExtra['model3d']) ? $mediaExtra['model3d'] : [];
-                                                                $v360Count = isset($v360['frame_count']) ? (int) $v360['frame_count'] : 0;
-                                                                $v360HasFrames = $v360Count > 0;
-                                                                $hotspotItems = isset($hotspots['items']) && is_array($hotspots['items']) ? $hotspots['items'] : [];
-                                                                $hotspotBase = isset($hotspots['target_image']) ? (string) $hotspots['target_image'] : '';
-                                                                $mediaVideos = \App\Models\ProductMediaVideo::where('product_id', $data->id)->get();
-                                                                $mediaVideoMap = [];
-                                                                foreach ($mediaVideos as $video) {
-                                                                    $mediaVideoMap[$video->target_type . ':' . (string) $video->target_id] = $video;
-                                                                }
-                                                            @endphp
-                                                            <div style="display:none;">
-                                                                <input type="hidden" name="media_3d_auto_rotate" value="{{ !empty($model3d['viewer']['auto_rotate']) ? 1 : 0 }}">
-                                                                <input type="hidden" name="media_3d_exposure" value="{{ isset($model3d['viewer']['exposure']) ? $model3d['viewer']['exposure'] : '' }}">
-                                                                <input type="hidden" name="media_3d_camera_orbit" value="{{ isset($model3d['viewer']['camera_orbit']) ? $model3d['viewer']['camera_orbit'] : '' }}">
-                                                            </div>
-                                                            <div class="apm-toolbar">
-                                                                <button type="button" class="apm-btn" id="apm-btn-360"
-                                                                    data-toggle="collapse" data-target="#media-360-collapse"
-                                                                    aria-expanded="false" aria-controls="media-360-collapse">
-                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                    </svg>
-                                                                    <span>360°</span>
-                                                                    <svg class="apm-chevron" id="apm-chevron-360" width="14" height="14"
-                                                                        viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button type="button" class="apm-btn" id="apm-btn-hotspots"
-                                                                    data-toggle="collapse" data-target="#media-hotspot-collapse"
-                                                                    aria-expanded="false" aria-controls="media-hotspot-collapse">
-                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                    </svg>
-                                                                    <span>{{ __('Hotspots') }}</span>
-                                                                    <svg class="apm-chevron" id="apm-chevron-hotspots" width="14" height="14"
-                                                                        viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button type="button" class="apm-btn" id="apm-btn-3d"
-                                                                    data-toggle="collapse" data-target="#media-3d-collapse"
-                                                                    aria-expanded="false" aria-controls="media-3d-collapse">
-                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                    </svg>
-                                                                    <span>3D</span>
-                                                                    <svg class="apm-chevron" id="apm-chevron-3d" width="14" height="14"
-                                                                        viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button type="button" class="apm-btn" id="apm-btn-media"
-                                                                    data-toggle="collapse" data-target="#media-video-collapse"
-                                                                    aria-expanded="false" aria-controls="media-video-collapse">
-                                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M4 6h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"
-                                                                            stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
-                                                                            stroke-linejoin="round" />
-                                                                    </svg>
-                                                                    <span>{{ __('Media') }}</span>
-                                                                    <svg class="apm-chevron" id="apm-chevron-media" width="14" height="14"
-                                                                        viewBox="0 0 24 24" fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg">
-                                                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round" />
-                                                                    </svg>
-                                                                </button>
-                                                            </div>
-                                                            <div class="accordion apm-accordion" id="media-advanced-accordion">
-                                                                <div class="card">
-                                                                    <div class="card-header" id="media-360-heading">
-                                                                        <h6 class="mb-0">
-                                                                            <button class="btn btn-link collapsed" type="button"
-                                                                                data-toggle="collapse" data-target="#media-360-collapse"
-                                                                                aria-expanded="false" aria-controls="media-360-collapse">
-                                                                                {{ __('360° View') }}
-                                                                            </button>
-                                                                        </h6>
-                                                                    </div>
-                                                                    <div id="media-360-collapse" class="collapse"
-                                                                        aria-labelledby="media-360-heading"
-                                                                        data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body apm-panel">
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="checkbox-wrapper">
-                                                                                    <input type="checkbox" name="media_360_enabled"
-                                                                                        value="1" id="media_360_enabled" {{ !empty($v360['enabled']) ? 'checked' : '' }}>
-                                                                                        <label for="media_360_enabled">
-                                                                                            {{ __('Enable 360° View') }}
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('360° Frames') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(Upload 24-36 images in sequence)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <input type="file" class="input-field"
-                                                                                        name="media_360_frames[]" id="media_360_frames" multiple>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Upload Mode') }}</h4>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <label for="media_360_mode" class="sr-only">{{ __('Upload Mode') }}</label>
-                                                                                    <select class="input-field" id="media_360_mode">
-                                                                                        <option value="append" selected>{{ __('Add frames') }}</option>
-                                                                                        <option value="replace">{{ __('Replace all frames') }}</option>
-                                                                                    </select>
-                                                                                    <small class="text-danger" id="media_360_mode_warning" style="display:none;">
-                                                                                        {{ __('Warning: replacing will remove all existing frames.') }}
-                                                                                    </small>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Preview') }}</h4>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <a href="javascript:;" class="mybtn1" id="media_360_upload_btn">
-                                                                                        <i class="icofont-upload-alt"></i> {{ __('Upload 360 Frames') }}
-                                                                                    </a>
-                                                                                    <a href="javascript:;" class="mybtn1 {{ $v360HasFrames ? '' : 'disabled' }}" id="media_360_preview_btn"
-                                                                                        data-toggle="modal" data-target="#view360" {{ $v360HasFrames ? '' : 'aria-disabled=true' }}>
-                                                                                        <i class="icofont-eye-alt"></i> {{ __('View 360 Preview') }}
-                                                                                    </a>
-                                                                                    <a href="javascript:;" class="mybtn1" id="media_360_delete_btn">
-                                                                                        <i class="fas fa-trash-alt"></i> {{ __('Delete 360 Frames') }}
-                                                                                    </a>
-                                                                                    <span class="text-muted" id="media_360_status">
-                                                                                        {{ $v360HasFrames ? ($v360Count . ' ' . __('frames uploaded.')) : __('No frames uploaded yet.') }}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="card">
-                                                                    <div class="card-header" id="media-hotspot-heading">
-                                                                        <h6 class="mb-0">
-                                                                            <button class="btn btn-link collapsed" type="button"
-                                                                                data-toggle="collapse" data-target="#media-hotspot-collapse"
-                                                                                aria-expanded="false" aria-controls="media-hotspot-collapse">
-                                                                                {{ __('Hotspot View') }}
-                                                                            </button>
-                                                                        </h6>
-                                                                    </div>
-                                                                    <div id="media-hotspot-collapse" class="collapse"
-                                                                        aria-labelledby="media-hotspot-heading"
-                                                                        data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body apm-panel">
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="checkbox-wrapper">
-                                                                                    <input type="checkbox" name="media_hotspot_enabled"
-                                                                                        value="1" id="media_hotspot_enabled" {{ !empty($hotspots['enabled']) ? 'checked' : '' }}>
-                                                                                        <label for="media_hotspot_enabled">
-                                                                                            {{ __('Enable Hotspots') }}
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Hotspot Target') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(Image or 360° frame)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <select class="input-field" id="media_hotspot_target_mode">
-                                                                                        <option value="image" selected>{{ __('Image') }}</option>
-                                                                                        <option value="frame360">{{ __('360° Frame') }}</option>
-                                                                                        <option value="model3d">{{ __('3D Model') }}</option>
-                                                                                    </select>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row" id="media_hotspot_frame_row" style="display:none;">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Frame Selector') }}</h4>
-                                                                                        <p class="sub-heading">
-                                                                                            {{ __('(1 to') }} <span id="media_hotspot_frame_count">0</span>
-                                                                                            {{ __('frames)') }}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <input type="number" class="input-field" id="media_hotspot_frame_number"
-                                                                                        min="1" value="1">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row" id="media_hotspot_base_row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Base Image') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(Select feature or gallery image)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <select class="input-field" id="media_hotspot_base" name="media_hotspot_base">
-                                                                                        <option value="">{{ __('Select image') }}</option>
-                                                                                        <option value="feature"
-                                                                                            {{ $hotspotBase === 'feature' ? 'selected' : '' }}
-                                                                                            data-src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : asset('assets/images/products/' . $data->photo)) }}">
-                                                                                            {{ __('Feature Image') }}
-                                                                                        </option>
-                                                                                        @if ($data->galleries && $data->galleries->count() > 0)
-                                                                                            @foreach ($data->galleries as $gallery)
-                                                                                                <option value="gallery_{{ $gallery->id }}"
-                                                                                                    {{ $hotspotBase === 'gallery_' . $gallery->id ? 'selected' : '' }}
-                                                                                                    data-src="{{ asset('assets/images/galleries/' . $gallery->photo) }}">
-                                                                                                    {{ __('Gallery Image') }} #{{ $gallery->id }}
-                                                                                                </option>
-                                                                                            @endforeach
-                                                                                        @endif
-                                                                                    </select>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Preview') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(Click on image to add hotspots)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="lookbook media-hotspot-preview" id="media_hotspot_preview">
-                                                                                        <div class="lookbook-block" id="media_hotspot_block">
-                                                                                            <img id="media_hotspot_image" src="{{ asset('assets/images/noimage.png') }}"
-                                                                                                class="img-fluid bg-img" alt="">
-                                                                                            @foreach ($hotspotItems as $item)
-                                                                                                @php
-                                                                                                    $itemId = !empty($item['id']) ? (string) $item['id'] : ('hs_' . $loop->index);
-                                                                                                    $itemType = !empty($item['type']) ? (string) $item['type'] : 'text';
-                                                                                                    $itemLabel = isset($item['label']) ? (string) $item['label'] : __('Hotspot');
-                                                                                                    $itemDesc = isset($item['description']) ? (string) $item['description'] : '';
-                                                                                                    $itemTarget = !empty($item['target']) ? (string) $item['target'] : 'image';
-                                                                                                    $itemFrame = isset($item['frame']) ? (string) $item['frame'] : '';
-                                                                                                    $posX = isset($item['position']['x']) ? (float) $item['position']['x'] : null;
-                                                                                                    $posY = isset($item['position']['y']) ? (float) $item['position']['y'] : null;
-                                                                                                    $xPercent = is_numeric($posX) ? round($posX * 100, 2) : 0;
-                                                                                                    $yPercent = is_numeric($posY) ? round($posY * 100, 2) : 0;
-                                                                                                    $imageSrc = '';
-                                                                                                    if (isset($item['image'])) {
-                                                                                                        if (is_array($item['image']) && !empty($item['image']['src'])) {
-                                                                                                            $imageSrc = (string) $item['image']['src'];
-                                                                                                        } elseif (is_string($item['image'])) {
-                                                                                                            $imageSrc = (string) $item['image'];
-                                                                                                        }
-                                                                                                    }
-                                                                                                    $showImage = !empty($imageSrc) && $itemType !== 'text';
-                                                                                                    $showText = !$showImage || $itemType !== 'image';
-                                                                                                @endphp
-                                                                                                <div class="lookbook-dot media-hotspot-dot"
-                                                                                                    data-key="{{ $itemId }}"
-                                                                                                    data-target="{{ $itemTarget }}"
-                                                                                                    data-frame="{{ $itemFrame }}"
-                                                                                                    style="left:{{ number_format($xPercent, 2, '.', '') }}%; top:{{ number_format($yPercent, 2, '.', '') }}%;">
-                                                                                                    <span>{{ $loop->iteration }}</span>
-                                                                                                    <a href="javascript:void(0)">
-                                                                                                        <div class="dot-showbox">
-                                                                                                            <img class="dot-image img-fluid" alt=""
-                                                                                                                src="{{ $imageSrc }}"
-                                                                                                                style="{{ $showImage ? '' : 'display:none;' }}">
-                                                                                                            <div class="dot-info" style="{{ $showText ? '' : 'display:none;' }}">
-                                                                                                                <h5 class="title">{{ $itemLabel }}</h5>
-                                                                                                                <h6 class="desc">{{ $itemDesc }}</h6>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                    </a>
-                                                                                                </div>
-                                                                                            @endforeach
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Hotspot Items') }}</h4>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <div id="media_hotspot_items">
-                                                                                        <div class="media-hotspot-group" data-target="image">
-                                                                                            <div class="media-hotspot-group-title">{{ __('Image') }}</div>
-                                                                                            <div class="media-hotspot-group-items" id="media_hotspot_group_image">
-                                                                                                @foreach ($hotspotItems as $item)
-                                                                                                    @php
-                                                                                                        $itemTarget = !empty($item['target']) ? (string) $item['target'] : 'image';
-                                                                                                        if ($itemTarget !== 'image') { continue; }
-                                                                                                        $itemId = !empty($item['id']) ? (string) $item['id'] : ('hs_' . $loop->index);
-                                                                                                        $itemType = !empty($item['type']) ? (string) $item['type'] : 'text';
-                                                                                                        $itemLabel = isset($item['label']) ? (string) $item['label'] : '';
-                                                                                                        $itemDesc = isset($item['description']) ? (string) $item['description'] : '';
-                                                                                                        $itemFrame = isset($item['frame']) ? (string) $item['frame'] : '';
-                                                                                                        $posX = isset($item['position']['x']) ? (float) $item['position']['x'] : null;
-                                                                                                        $posY = isset($item['position']['y']) ? (float) $item['position']['y'] : null;
-                                                                                                        $xPercent = is_numeric($posX) ? round($posX * 100, 2) : 0;
-                                                                                                        $yPercent = is_numeric($posY) ? round($posY * 100, 2) : 0;
-                                                                                                        $imageSrc = '';
-                                                                                                        if (isset($item['image'])) {
-                                                                                                            if (is_array($item['image']) && !empty($item['image']['src'])) {
-                                                                                                                $imageSrc = (string) $item['image']['src'];
-                                                                                                            } elseif (is_string($item['image'])) {
-                                                                                                                $imageSrc = (string) $item['image'];
-                                                                                                            }
-                                                                                                        }
-                                                                                                        $showImageWrap = in_array($itemType, ['image', 'image_text'], true);
-                                                                                                    @endphp
-                                                                                                    <div class="media-hotspot-item row" data-key="{{ $itemId }}">
-                                                                                                        <div class="col-md-3">
-                                                                                                            <select class="input-field media-hotspot-type" name="media_hotspot_type[]">
-                                                                                                                <option value="text" {{ $itemType === 'text' ? 'selected' : '' }}>{{ __('Text') }}</option>
-                                                                                                                <option value="image" {{ $itemType === 'image' ? 'selected' : '' }}>{{ __('Image') }}</option>
-                                                                                                                <option value="image_text" {{ $itemType === 'image_text' ? 'selected' : '' }}>{{ __('Image + Text') }}</option>
-                                                                                                            </select>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-text-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-label" name="media_hotspot_label[]" placeholder="{{ __('Label') }}" value="{{ $itemLabel }}">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-text-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-desc" name="media_hotspot_description[]" placeholder="{{ __('Description') }}" value="{{ $itemDesc }}">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-actions">
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-toggle" title="{{ __('Toggle visibility') }}"><i class="fas fa-eye"></i></a>
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-jump" title="{{ __('Jump to target') }}"><i class="fas fa-crosshairs"></i></a>
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-remove" title="{{ __('Remove hotspot') }}"><i class="fas fa-times"></i></a>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-6 media-hotspot-image-wrap" style="{{ $showImageWrap ? '' : 'display:none;' }}">
-                                                                                                            <input type="file" class="input-field media-hotspot-image" name="media_hotspot_image[]" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
-                                                                                                            <div class="media-hotspot-thumb-wrap">
-                                                                                                                <img class="img-fluid media-hotspot-thumb" style="max-width:80px; margin-top:6px; {{ $imageSrc ? '' : 'display:none;' }}" alt="" src="{{ $imageSrc }}">
-                                                                                                            </div>
-                                                                                                            <small class="text-muted">{{ __('Max 2MB') }}</small>
-                                                                                                            <div class="alert alert-danger media-hotspot-error" style="display:none; margin-top:6px;"></div>
-                                                                                                            <div style="margin-top:6px;">
-                                                                                                                <a href="javascript:;" class="mybtn1 media-hotspot-change-image"><i class="fas fa-image"></i> {{ __('Change image') }}</a>
-                                                                                                                <a href="javascript:;" class="mybtn1 media-hotspot-remove-image"><i class="fas fa-times"></i> {{ __('Remove image') }}</a>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-x3d" name="media_hotspot_x3d[]" placeholder="x" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-y3d" name="media_hotspot_y3d[]" placeholder="y" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-z3d" name="media_hotspot_z3d[]" placeholder="z" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-orbit" name="media_hotspot_orbit[]" placeholder="{{ __('camera_orbit') }}" value="">
-                                                                                                        </div>
-                                                                                                        <input type="hidden" name="media_hotspot_id[]" value="{{ $itemId }}">
-                                                                                                        <input type="hidden" name="media_hotspot_x[]" value="{{ number_format($xPercent, 2, '.', '') }}">
-                                                                                                        <input type="hidden" name="media_hotspot_y[]" value="{{ number_format($yPercent, 2, '.', '') }}">
-                                                                                                        <input type="hidden" class="media-hotspot-target" name="media_hotspot_target[]" value="{{ $itemTarget }}">
-                                                                                                        <input type="hidden" class="media-hotspot-frame" name="media_hotspot_frame[]" value="{{ $itemFrame }}">
-                                                                                                        <input type="hidden" name="media_hotspot_image_delete[]" value="0">
-                                                                                                        <div class="col-12"><small class="text-muted media-hotspot-status"></small></div>
-                                                                                                    </div>
-                                                                                                @endforeach
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="media-hotspot-group" data-target="frame360">
-                                                                                            <div class="media-hotspot-group-title">{{ __('360 Frames') }}</div>
-                                                                                            <div class="media-hotspot-group-items" id="media_hotspot_group_frame">
-                                                                                                @foreach ($hotspotItems as $item)
-                                                                                                    @php
-                                                                                                        $itemTarget = !empty($item['target']) ? (string) $item['target'] : 'image';
-                                                                                                        if ($itemTarget !== 'frame360') { continue; }
-                                                                                                        $itemId = !empty($item['id']) ? (string) $item['id'] : ('hs_' . $loop->index);
-                                                                                                        $itemType = !empty($item['type']) ? (string) $item['type'] : 'text';
-                                                                                                        $itemLabel = isset($item['label']) ? (string) $item['label'] : '';
-                                                                                                        $itemDesc = isset($item['description']) ? (string) $item['description'] : '';
-                                                                                                        $itemFrame = isset($item['frame']) ? (string) $item['frame'] : '';
-                                                                                                        $posX = isset($item['position']['x']) ? (float) $item['position']['x'] : null;
-                                                                                                        $posY = isset($item['position']['y']) ? (float) $item['position']['y'] : null;
-                                                                                                        $xPercent = is_numeric($posX) ? round($posX * 100, 2) : 0;
-                                                                                                        $yPercent = is_numeric($posY) ? round($posY * 100, 2) : 0;
-                                                                                                        $imageSrc = '';
-                                                                                                        if (isset($item['image'])) {
-                                                                                                            if (is_array($item['image']) && !empty($item['image']['src'])) {
-                                                                                                                $imageSrc = (string) $item['image']['src'];
-                                                                                                            } elseif (is_string($item['image'])) {
-                                                                                                                $imageSrc = (string) $item['image'];
-                                                                                                            }
-                                                                                                        }
-                                                                                                        $showImageWrap = in_array($itemType, ['image', 'image_text'], true);
-                                                                                                    @endphp
-                                                                                                    <div class="media-hotspot-item row" data-key="{{ $itemId }}">
-                                                                                                        <div class="col-md-3">
-                                                                                                            <select class="input-field media-hotspot-type" name="media_hotspot_type[]">
-                                                                                                                <option value="text" {{ $itemType === 'text' ? 'selected' : '' }}>{{ __('Text') }}</option>
-                                                                                                                <option value="image" {{ $itemType === 'image' ? 'selected' : '' }}>{{ __('Image') }}</option>
-                                                                                                                <option value="image_text" {{ $itemType === 'image_text' ? 'selected' : '' }}>{{ __('Image + Text') }}</option>
-                                                                                                            </select>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-text-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-label" name="media_hotspot_label[]" placeholder="{{ __('Label') }}" value="{{ $itemLabel }}">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-text-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-desc" name="media_hotspot_description[]" placeholder="{{ __('Description') }}" value="{{ $itemDesc }}">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-actions">
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-toggle" title="{{ __('Toggle visibility') }}"><i class="fas fa-eye"></i></a>
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-jump" title="{{ __('Jump to target') }}"><i class="fas fa-crosshairs"></i></a>
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-remove" title="{{ __('Remove hotspot') }}"><i class="fas fa-times"></i></a>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-6 media-hotspot-image-wrap" style="{{ $showImageWrap ? '' : 'display:none;' }}">
-                                                                                                            <input type="file" class="input-field media-hotspot-image" name="media_hotspot_image[]" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
-                                                                                                            <div class="media-hotspot-thumb-wrap">
-                                                                                                                <img class="img-fluid media-hotspot-thumb" style="max-width:80px; margin-top:6px; {{ $imageSrc ? '' : 'display:none;' }}" alt="" src="{{ $imageSrc }}">
-                                                                                                            </div>
-                                                                                                            <small class="text-muted">{{ __('Max 2MB') }}</small>
-                                                                                                            <div class="alert alert-danger media-hotspot-error" style="display:none; margin-top:6px;"></div>
-                                                                                                            <div style="margin-top:6px;">
-                                                                                                                <a href="javascript:;" class="mybtn1 media-hotspot-change-image"><i class="fas fa-image"></i> {{ __('Change image') }}</a>
-                                                                                                                <a href="javascript:;" class="mybtn1 media-hotspot-remove-image"><i class="fas fa-times"></i> {{ __('Remove image') }}</a>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-x3d" name="media_hotspot_x3d[]" placeholder="x" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-y3d" name="media_hotspot_y3d[]" placeholder="y" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-z3d" name="media_hotspot_z3d[]" placeholder="z" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-orbit" name="media_hotspot_orbit[]" placeholder="{{ __('camera_orbit') }}" value="">
-                                                                                                        </div>
-                                                                                                        <input type="hidden" name="media_hotspot_id[]" value="{{ $itemId }}">
-                                                                                                        <input type="hidden" name="media_hotspot_x[]" value="{{ number_format($xPercent, 2, '.', '') }}">
-                                                                                                        <input type="hidden" name="media_hotspot_y[]" value="{{ number_format($yPercent, 2, '.', '') }}">
-                                                                                                        <input type="hidden" class="media-hotspot-target" name="media_hotspot_target[]" value="{{ $itemTarget }}">
-                                                                                                        <input type="hidden" class="media-hotspot-frame" name="media_hotspot_frame[]" value="{{ $itemFrame }}">
-                                                                                                        <input type="hidden" name="media_hotspot_image_delete[]" value="0">
-                                                                                                        <div class="col-12"><small class="text-muted media-hotspot-status"></small></div>
-                                                                                                    </div>
-                                                                                                @endforeach
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="media-hotspot-group" data-target="model3d">
-                                                                                            <div class="media-hotspot-group-title">{{ __('3D Model') }}</div>
-                                                                                            <div class="media-hotspot-group-items" id="media_hotspot_group_model">
-                                                                                                @foreach ($hotspotItems as $item)
-                                                                                                    @php
-                                                                                                        $itemTarget = !empty($item['target']) ? (string) $item['target'] : 'image';
-                                                                                                        if ($itemTarget !== 'model3d') { continue; }
-                                                                                                        $itemId = !empty($item['id']) ? (string) $item['id'] : ('hs_' . $loop->index);
-                                                                                                        $itemType = !empty($item['type']) ? (string) $item['type'] : 'text';
-                                                                                                        $itemLabel = isset($item['label']) ? (string) $item['label'] : '';
-                                                                                                        $itemDesc = isset($item['description']) ? (string) $item['description'] : '';
-                                                                                                        $itemFrame = isset($item['frame']) ? (string) $item['frame'] : '';
-                                                                                                        $posX = isset($item['position']['x']) ? (float) $item['position']['x'] : null;
-                                                                                                        $posY = isset($item['position']['y']) ? (float) $item['position']['y'] : null;
-                                                                                                        $xPercent = is_numeric($posX) ? round($posX * 100, 2) : 0;
-                                                                                                        $yPercent = is_numeric($posY) ? round($posY * 100, 2) : 0;
-                                                                                                        $imageSrc = '';
-                                                                                                        if (isset($item['image'])) {
-                                                                                                            if (is_array($item['image']) && !empty($item['image']['src'])) {
-                                                                                                                $imageSrc = (string) $item['image']['src'];
-                                                                                                            } elseif (is_string($item['image'])) {
-                                                                                                                $imageSrc = (string) $item['image'];
-                                                                                                            }
-                                                                                                        }
-                                                                                                        $showImageWrap = in_array($itemType, ['image', 'image_text'], true);
-                                                                                                    @endphp
-                                                                                                    <div class="media-hotspot-item row" data-key="{{ $itemId }}">
-                                                                                                        <div class="col-md-3">
-                                                                                                            <select class="input-field media-hotspot-type" name="media_hotspot_type[]">
-                                                                                                                <option value="text" {{ $itemType === 'text' ? 'selected' : '' }}>{{ __('Text') }}</option>
-                                                                                                                <option value="image" {{ $itemType === 'image' ? 'selected' : '' }}>{{ __('Image') }}</option>
-                                                                                                                <option value="image_text" {{ $itemType === 'image_text' ? 'selected' : '' }}>{{ __('Image + Text') }}</option>
-                                                                                                            </select>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-text-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-label" name="media_hotspot_label[]" placeholder="{{ __('Label') }}" value="{{ $itemLabel }}">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-text-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-desc" name="media_hotspot_description[]" placeholder="{{ __('Description') }}" value="{{ $itemDesc }}">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-actions">
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-toggle" title="{{ __('Toggle visibility') }}"><i class="fas fa-eye"></i></a>
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-jump" title="{{ __('Jump to target') }}"><i class="fas fa-crosshairs"></i></a>
-                                                                                                            <a href="javascript:;" class="mybtn1 media-hotspot-remove" title="{{ __('Remove hotspot') }}"><i class="fas fa-times"></i></a>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-6 media-hotspot-image-wrap" style="{{ $showImageWrap ? '' : 'display:none;' }}">
-                                                                                                            <input type="file" class="input-field media-hotspot-image" name="media_hotspot_image[]" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
-                                                                                                            <div class="media-hotspot-thumb-wrap">
-                                                                                                                <img class="img-fluid media-hotspot-thumb" style="max-width:80px; margin-top:6px; {{ $imageSrc ? '' : 'display:none;' }}" alt="" src="{{ $imageSrc }}">
-                                                                                                            </div>
-                                                                                                            <small class="text-muted">{{ __('Max 2MB') }}</small>
-                                                                                                            <div class="alert alert-danger media-hotspot-error" style="display:none; margin-top:6px;"></div>
-                                                                                                            <div style="margin-top:6px;">
-                                                                                                                <a href="javascript:;" class="mybtn1 media-hotspot-change-image"><i class="fas fa-image"></i> {{ __('Change image') }}</a>
-                                                                                                                <a href="javascript:;" class="mybtn1 media-hotspot-remove-image"><i class="fas fa-times"></i> {{ __('Remove image') }}</a>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-x3d" name="media_hotspot_x3d[]" placeholder="x" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-y3d" name="media_hotspot_y3d[]" placeholder="y" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-z3d" name="media_hotspot_z3d[]" placeholder="z" value="">
-                                                                                                        </div>
-                                                                                                        <div class="col-md-3 media-hotspot-3d-wrap">
-                                                                                                            <input type="text" class="input-field media-hotspot-3d-input media-hotspot-orbit" name="media_hotspot_orbit[]" placeholder="{{ __('camera_orbit') }}" value="">
-                                                                                                        </div>
-                                                                                                        <input type="hidden" name="media_hotspot_id[]" value="{{ $itemId }}">
-                                                                                                        <input type="hidden" name="media_hotspot_x[]" value="{{ number_format($xPercent, 2, '.', '') }}">
-                                                                                                        <input type="hidden" name="media_hotspot_y[]" value="{{ number_format($yPercent, 2, '.', '') }}">
-                                                                                                        <input type="hidden" class="media-hotspot-target" name="media_hotspot_target[]" value="{{ $itemTarget }}">
-                                                                                                        <input type="hidden" class="media-hotspot-frame" name="media_hotspot_frame[]" value="{{ $itemFrame }}">
-                                                                                                        <input type="hidden" name="media_hotspot_image_delete[]" value="0">
-                                                                                                        <div class="col-12"><small class="text-muted media-hotspot-status"></small></div>
-                                                                                                    </div>
-                                                                                                @endforeach
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="card">
-                                                                    <div class="card-header" id="media-3d-heading">
-                                                                        <h6 class="mb-0">
-                                                                            <button class="btn btn-link collapsed" type="button"
-                                                                                data-toggle="collapse" data-target="#media-3d-collapse"
-                                                                                aria-expanded="false" aria-controls="media-3d-collapse">
-                                                                                {{ __('3D Model View') }}
-                                                                            </button>
-                                                                        </h6>
-                                                                    </div>
-                                                                    <div id="media-3d-collapse" class="collapse"
-                                                                        aria-labelledby="media-3d-heading"
-                                                                        data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body apm-panel">
-                                                                            @php
-                                                                                $model3dEnabled = !empty($model3d['enabled']);
-                                                                                $model3dSrc = !empty($model3d['src']) ? (string) $model3d['src'] : '';
-                                                                                $model3dName = $model3dSrc ? basename(parse_url($model3dSrc, PHP_URL_PATH) ?: $model3dSrc) : '';
-                                                                            @endphp
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="checkbox-wrapper">
-                                                                                        <input type="checkbox" name="media_3d_enabled"
-                                                                                            value="1" id="media_3d_enabled" {{ $model3dEnabled ? 'checked' : '' }}>
-                                                                                        <label for="media_3d_enabled">
-                                                                                            {{ __('Enable 3D Model') }}
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('3D Model File') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(GLB/GLTF)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <input type="file" class="input-field"
-                                                                                        name="media_3d_model" id="media_3d_model"
-                                                                                        accept=".glb,.gltf">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Preview') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(Admin-only preview)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <model-viewer id="media_3d_viewer"
-                                                                                        style="width: 100%; height: 400px; background: #f8f8f8;"
-                                                                                        @if(!empty($model3dSrc)) src="{{ $model3dSrc }}" @endif
-                                                                                        camera-controls zoom fullscreen
-                                                                                        loading="lazy">
-                                                                                    </model-viewer>
-                                                                                    <div class="text-muted" id="media_3d_status">
-                                                                                        {{ !empty($model3dName) ? $model3dName : __('No 3D model selected.') }}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Actions') }}</h4>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div class="col-lg-12">
-                                                                                    <a href="javascript:;" class="mybtn1" id="media_3d_clear">
-                                                                                        <i class="fas fa-times"></i> {{ __('Clear 3D Preview') }}
-                                                                                    </a>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="card">
-                                                                    <div class="card-header" id="media-video-heading">
-                                                                        <h6 class="mb-0">
-                                                                            <button class="btn btn-link collapsed" type="button"
-                                                                                data-toggle="collapse" data-target="#media-video-collapse"
-                                                                                aria-expanded="false" aria-controls="media-video-collapse">
-                                                                                {{ __('Media') }}
-                                                                            </button>
-                                                                        </h6>
-                                                                    </div>
-                                                                    <div id="media-video-collapse" class="collapse"
-                                                                        aria-labelledby="media-video-heading"
-                                                                        data-parent="#media-advanced-accordion">
-                                                                        <div class="card-body apm-panel">
-                                                                            @php
-                                                                                $mainImageSrc = !empty($data->photo)
-                                                                                    ? asset('assets/images/products/' . $data->photo)
-                                                                                    : asset('assets/images/noimage.png');
-                                                                                $galleryItems = $data->galleries ?? collect();
-                                                                                if (is_array($galleryItems)) {
-                                                                                    $galleryItems = collect($galleryItems);
-                                                                                }
-                                                                            @endphp
-                                                                            <div class="row">
-                                                                                <div class="col-lg-12">
-                                                                                    <div class="left-area">
-                                                                                        <h4 class="heading">{{ __('Image Videos') }}</h4>
-                                                                                        <p class="sub-heading">{{ __('(Upload a video or paste a URL per image)') }}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="apm-media-list">
-                                                                                @php
-                                                                                    $items = collect([
-                                                                                        [
-                                                                                            'key' => 'main:0',
-                                                                                            'type' => 'main',
-                                                                                            'id' => 0,
-                                                                                            'label' => __('Main Image'),
-                                                                                            'src' => $mainImageSrc,
-                                                                                        ],
-                                                                                    ]);
-                                                                                    if ($galleryItems instanceof \Illuminate\Support\Collection && $galleryItems->isNotEmpty()) {
-                                                                                        foreach ($galleryItems as $gallery) {
-                                                                                            $items->push([
-                                                                                                'key' => 'gallery:' . $gallery->id,
-                                                                                                'type' => 'gallery',
-                                                                                                'id' => $gallery->id,
-                                                                                                'label' => __('Gallery Image') . ' #' . $gallery->id,
-                                                                                                'src' => asset('assets/images/galleries/' . $gallery->photo),
-                                                                                            ]);
-                                                                                        }
-                                                                                    }
-                                                                                @endphp
-                                                                                @foreach ($items as $item)
-                                                                                    @php
-                                                                                        $video = $mediaVideoMap[$item['key']] ?? null;
-                                                                                        $videoSrc = null;
-                                                                                        $videoLabel = null;
-                                                                                        $videoUrlValue = '';
-                                                                                        if ($video) {
-                                                                                            $videoLabel = $video->source_type === 'upload' ? basename($video->video_path ?? '') : $video->video_url;
-                                                                                            $videoSrc = $video->source_type === 'upload'
-                                                                                                ? asset($video->video_path)
-                                                                                                : $video->video_url;
-                                                                                            if ($video->source_type === 'url') {
-                                                                                                $videoUrlValue = $video->video_url;
-                                                                                            }
-                                                                                        }
-                                                                                    @endphp
-                                                                                    <div class="apm-media-item">
-                                                                                        <div class="apm-media-thumb">
-                                                                                            <img src="{{ $item['src'] }}" alt="{{ $item['label'] }}">
-                                                                                        </div>
-                                                                                        <div class="apm-media-body">
-                                                                                            <div class="apm-media-title">{{ $item['label'] }}</div>
-                                                                                            <input type="hidden" name="media_video_target_type[{{ $item['key'] }}]" value="{{ $item['type'] }}">
-                                                                                            <input type="hidden" name="media_video_target_id[{{ $item['key'] }}]" value="{{ $item['id'] }}">
-                                                                                            <div class="apm-media-fields">
-                                                                                                <div class="apm-media-field">
-                                                                                                    <label class="sub-heading">{{ __('Video File') }}</label>
-                                                                                                    <input type="file" class="input-field apm-media-file"
-                                                                                                        name="media_video_file[{{ $item['key'] }}]"
-                                                                                                        accept="video/mp4,video/webm,video/ogg">
-                                                                                                    <small class="text-muted">{{ __('MP4/WebM/OGG · Max 50MB') }}</small>
-                                                                                                </div>
-                                                                                                <div class="apm-media-field">
-                                                                                                    <label class="sub-heading">{{ __('Video URL') }}</label>
-                                                                                                    <input type="text" class="input-field apm-media-url"
-                                                                                                        name="media_video_url[{{ $item['key'] }}]"
-                                                                                                        value="{{ $videoUrlValue }}"
-                                                                                                        placeholder="{{ __('https://...') }}">
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <div class="apm-media-actions">
-                                                                                                <label class="apm-media-remove">
-                                                                                                    <input type="checkbox" name="media_video_remove[{{ $item['key'] }}]" value="1">
-                                                                                                    {{ __('Remove video') }}
-                                                                                                </label>
-                                                                                                <button type="button" class="mybtn1 apm-video-preview"
-                                                                                                    data-video-src="{{ $videoSrc ?? '' }}">
-                                                                                                    <i class="fas fa-eye"></i> {{ __('Preview') }}
-                                                                                                </button>
-                                                                                                @if ($videoLabel)
-                                                                                                    <span class="text-muted apm-media-current">{{ $videoLabel }}</span>
-                                                                                                @endif
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="apm-footer">
-                                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                                                    xmlns="http://www.w3.org/2000/svg">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                                <span>{{ __('Select a media type to configure interactive product experiences') }}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        @php
+                                            $mediaExtra = json_decode($data->media_extra, true);
+                                            if (!is_array($mediaExtra)) { $mediaExtra = []; }
+                                            $v360         = isset($mediaExtra['v360'])     && is_array($mediaExtra['v360'])     ? $mediaExtra['v360']     : [];
+                                            $hotspots     = isset($mediaExtra['hotspots']) && is_array($mediaExtra['hotspots']) ? $mediaExtra['hotspots'] : [];
+                                            $model3d      = isset($mediaExtra['model3d'])  && is_array($mediaExtra['model3d'])  ? $mediaExtra['model3d']  : [];
+                                            $v360Count    = isset($v360['frame_count']) ? (int) $v360['frame_count'] : 0;
+                                            // Also check filesystem for accurate frame count display (Issue #3 fix)
+                                            $framesManifest = public_path('assets/products_media/' . $data->id . '/360/frames/manifest.json');
+                                            $v360HasFrames = $v360Count > 0 || file_exists($framesManifest);
+                                            $hotspotItems = isset($hotspots['items']) && is_array($hotspots['items']) ? $hotspots['items'] : [];
+                                            $hotspotBase  = isset($hotspots['target_image']) ? (string) $hotspots['target_image'] : '';
+                                            $mediaVideos  = \App\Models\ProductMediaVideo::where('product_id', $data->id)->get();
+                                            $mediaVideoMap = [];
+                                            foreach ($mediaVideos as $video) {
+                                                $mediaVideoMap[$video->target_type . ':' . (string) $video->target_id] = $video;
+                                            }
+                                        @endphp
+                                        @include('admin.product.partials.advanced-media-panel', [
+                                            'product'      => $data,
+                                            'mode'         => 'edit',
+                                            'productId'    => $data->id,
+                                            'mediaExtra'   => $mediaExtra,
+                                            'v360'         => $v360,
+                                            'hotspots'     => $hotspots,
+                                            'model3d'      => $model3d,
+                                            'mediaVideos'  => $mediaVideos,
+                                            'mediaVideoMap'=> $mediaVideoMap,
+                                        ])
 
                                         <div class="row">
                                             <div class="col-lg-12">
@@ -2345,22 +1354,32 @@
 
         // Gallery Section Update
 
-
+var galleryRequestId = 0;
 
         $(document).on("click", ".set-gallery", function() {
             var pid = $(this).find('input[type=hidden]').val();
             $('#pid').val(pid);
-            $('.selected-image .row').html('');
-            $.ajax({
+            var $galleryRow = $('.selected-image .row');
+
+$galleryRow.children().detach();
+            var requestId = ++galleryRequestId;
+
+$.ajax({
                 type: "GET",
                 url: "{{ route('admin-gallery-show') }}",
                 data: {
                     id: pid
                 },
                 success: function(data) {
+
+    if (requestId !== galleryRequestId) {
+        return;
+    }
                     if (data[0] == 0) {
                         $('.selected-image .row').addClass('justify-content-center');
-                        $('.selected-image .row').html('<h3>{{ __('No Images Found.') }}</h3>');
+                        $('.selected-image .row')
+    .empty()
+    .append('<h3>{{ __('No Images Found.') }}</h3>');
                     } else {
                         $('.selected-image .row').removeClass('justify-content-center');
                         $('.selected-image .row h3').remove();
@@ -2368,7 +1387,7 @@
                             return el
                         });
 
-                        for (var k in arr) {
+                        for (var k = 0; k < arr.length; k++) {
                             $('.selected-image .row').append('<div class="col-sm-6">' +
                                 '<div class="img gallery-img">' +
                                 '<span class="remove-img"><i class="fas fa-times"></i>' +
@@ -2386,6 +1405,20 @@
                         }
                     }
 
+                },
+                                error: function(xhr) {
+
+                    mlog('gallery fetch failed', xhr);
+
+                    $('.selected-image .row')
+                        .addClass('justify-content-center')
+                        .html('<h3>{{ __('Failed to load gallery.') }}</h3>');
+
+                    $.notify(
+                        '{{ __('Unable to load gallery.') }}',
+                        'danger'
+                    );
+
                 }
             });
         });
@@ -2393,7 +1426,36 @@
 
         $(document).on('click', '.remove-img', function() {
             var id = $(this).find('input[type=hidden]').val();
-            $(this).parent().parent().remove();
+            $(document).on('click', '.remove-img', function() {
+
+    var $card = $(this).parent().parent();
+    var id = $(this).find('input[type=hidden]').val();
+
+    $.ajax({
+        type: "GET",
+        timeout: 15000,
+        url: "{{ route('admin-gallery-delete') }}",
+        data: {
+            id: id
+        },
+
+        success: function() {
+            $card.remove();
+        },
+
+        error: function(xhr) {
+
+            mlog('gallery delete failed', xhr);
+
+            $.notify(
+                '{{ __('Failed to delete image.') }}',
+                'danger'
+            );
+
+        }
+    });
+
+});
             $.ajax({
                 type: "GET",
                 url: "{{ route('admin-gallery-delete') }}",
@@ -2412,10 +1474,13 @@
             $("#form-gallery").submit();
         });
 
-        $('#form-gallery').on('submit', function() {
+        $('#form-gallery')
+    .off('submit.apmGalleryUpload')
+    .on('submit.apmGalleryUpload', function() {
             $.ajax({
                 url: "{{ route('admin-gallery-store') }}",
                 method: "POST",
+                timeout: 30000,
                 data: new FormData(this),
                 dataType: 'JSON',
                 contentType: false,
@@ -2428,7 +1493,7 @@
                         var arr = $.map(data, function(el) {
                             return el
                         });
-                        for (var k in arr) {
+                        for (var k = 0; k < arr.length; k++) {
                             $('.selected-image .row').append('<div class="col-sm-6">' +
                                 '<div class="img gallery-img">' +
                                 '<span class="remove-img"><i class="fas fa-times"></i>' +
@@ -2446,7 +1511,18 @@
                         }
                     }
 
-                }
+                },
+
+                error: function(xhr) {
+
+    $.notify('{{ __('Gallery upload failed.') }}', 'danger');
+
+    mlog('gallery upload failed', xhr);
+
+},
+complete: function() {
+    $('#uploadgallery').val('');
+}
 
             });
             return false;
@@ -2490,11 +1566,61 @@
 
         function loadScriptOnce(id, src, attrs) {
             return new Promise(function(resolve, reject) {
-                if (document.getElementById(id)) {
-                    mlog('script already loaded:', id);
-                    resolve();
-                    return;
-                }
+var existing = document.getElementById(id);
+
+if (existing) {
+
+    if (existing.dataset.loaded === 'true') {
+        mlog('script already loaded:', id);
+        resolve();
+        return;
+    }
+
+    // If script already exists but browser completed loading,
+    // mark it loaded and resolve safely.
+    if (
+        existing.readyState === 'complete' ||
+        existing.readyState === 'loaded'
+    ) {
+        existing.dataset.loaded = 'true';
+        resolve();
+        return;
+    }
+
+    var settled = false;
+
+    function cleanup() {
+        existing.removeEventListener('load', handleLoad);
+        existing.removeEventListener('error', handleError);
+    }
+
+    function handleLoad() {
+
+        if (settled) return;
+        settled = true;
+
+        existing.dataset.loaded = 'true';
+
+        cleanup();
+
+        resolve();
+    }
+
+    function handleError(e) {
+
+        if (settled) return;
+        settled = true;
+
+        cleanup();
+
+        reject(e);
+    }
+
+    existing.addEventListener('load', handleLoad);
+    existing.addEventListener('error', handleError);
+
+    return;
+}
                 mlog('loading script:', id, src);
                 var script = document.createElement('script');
                 script.id = id;
@@ -2504,10 +1630,29 @@
                         script.setAttribute(key, attrs[key]);
                     });
                 }
-                script.onload = function() {
-                    mlog('script loaded:', id);
-                    resolve();
-                };
+var settled = false;
+
+script.onload = function() {
+
+    if (settled) return;
+    settled = true;
+
+    script.dataset.loaded = 'true';
+
+    mlog('script loaded:', id);
+
+    resolve();
+};
+
+script.onerror = function(e) {
+
+    if (settled) return;
+    settled = true;
+
+    mlog('script failed:', id, src, e);
+
+    reject(e);
+};
                 script.onerror = function(e) {
                     mlog('script failed:', id, src, e);
                     reject(e);
@@ -2536,6 +1681,10 @@
             if (!img_array.length || !$.fn.ThreeSixty) {
                 return;
             }
+
+            if (pro_view && typeof pro_view.stop === 'function') {
+    pro_view.stop();
+}
 
             $('.product-images-item').html('');
             $('.spinner span').text('0%');
@@ -2567,23 +1716,46 @@
                 }
             });
 
-            $('.custom_previous').bind('click', function(e) {
-                pro_view.previous();
-            });
+$(document)
+    .off('click.apm360Prev')
+    .on('click.apm360Prev', '.custom_previous', function(e) {
+        e.preventDefault();
+        if (pro_view) {
+            pro_view.previous();
+        }
+    });
 
-            $('.custom_next').bind('click', function(e) {
-                pro_view.next();
-            });
+$(document)
+    .off('click.apm360Next')
+    .on('click.apm360Next', '.custom_next', function(e) {
+        e.preventDefault();
 
-            $('.custom_play').bind('click', function(e) {
-                pro_view.play();
-                $('.nav_bar').addClass('play-video');
-            });
+        if (pro_view) {
+            pro_view.next();
+        }
+    });
 
-            $('.custom_stop').bind('click', function(e) {
-                pro_view.stop();
-                $('.nav_bar').removeClass('play-video');
-            });
+$(document)
+    .off('click.apm360Play')
+    .on('click.apm360Play', '.custom_play', function(e) {
+        e.preventDefault();
+
+        if (pro_view) {
+            pro_view.play();
+            $('.nav_bar').addClass('play-video');
+        }
+    });
+
+$(document)
+    .off('click.apm360Stop')
+    .on('click.apm360Stop', '.custom_stop', function(e) {
+        e.preventDefault();
+
+        if (pro_view) {
+            pro_view.stop();
+            $('.nav_bar').removeClass('play-video');
+        }
+    });
 
             $('.product-image-360')
                 .off('frameIndexChanged.media360state')
@@ -2632,17 +1804,49 @@
             update360Warning();
         }
 
-        function loadMedia360Manifest(mode, callback) {
-            $.get("{{ route('admin-prod-media-360-manifest', $data->id) }}", function(data) {
-                if (data.frames) {
-                    mlog('manifest loaded:', { mode: mode, frames: (data.frames ? data.frames.length : 0) });
-                    setMedia360Frames(data.frames, mode);
-                    if (typeof callback === 'function') {
-                        callback();
-                    }
-                }
-            });
+        var media360ManifestRequestId = 0;
+
+function loadMedia360Manifest(mode, callback) {
+
+    var requestId = ++media360ManifestRequestId;
+
+$.get("{{ route('admin-prod-media-360-manifest', $data->id) }}", function(data) {
+
+    if (requestId !== media360ManifestRequestId) {
+        return;
+    }
+
+    if (data && Array.isArray(data.frames)) {
+
+        mlog('manifest loaded:', {
+            mode: mode,
+            frames: (data.frames ? data.frames.length : 0)
+        });
+
+        setMedia360Frames(data.frames, mode);
+
+        if (typeof callback === 'function') {
+            callback();
         }
+    }
+
+}).fail(function(xhr) {
+
+    img_array = [];
+    len_count = 0;
+
+    $('#media_360_preview_btn')
+        .addClass('disabled')
+        .attr('aria-disabled', 'true');
+
+    $('#media_hotspot_frame_count').text('0');
+
+    mlog('manifest load failed', xhr);
+
+    $.notify('{{ __('Unable to load 360 manifest.') }}', 'danger');
+
+});
+}
 
         function update360Warning() {
             if ($('#media_360_enabled').is(':checked') && len_count === 0) {
@@ -2672,7 +1876,9 @@
                 v360_enabled: $('#media_360_enabled').is(':checked'),
                 preview_disabled: $('#media_360_preview_btn').hasClass('disabled') || $('#media_360_preview_btn').attr('aria-disabled')
             });
-            $('#media_360_mode').on('change', function() {
+            $('#media_360_mode')
+    .off('change.apm360Mode')
+    .on('change.apm360Mode', function() {
                 var mode = $(this).val() || 'append';
                 if (mode === 'replace') {
                     if (!confirmReplaceIfNeeded()) {
@@ -2685,22 +1891,42 @@
                 }
             }).trigger('change');
 
-            $('#media-advanced-collapse').on('shown.bs.collapse', function() {
-                if (mediaAdvancedLoaded) {
-                    return;
-                }
-                mediaAdvancedLoaded = true;
-                ensure360Script().then(function() {
-                    loadMedia360Manifest('append');
-                    if (pending360Init) {
-                        init360Viewer();
-                        pending360Init = false;
-                    }
-                });
-                ensureModelViewerScripts();
-            });
+$('#media-advanced-collapse').on('shown.bs.collapse', function() {
 
-            $('#media_360_upload_btn').on('click', function(e) {
+    if (mediaAdvancedLoaded) {
+        return;
+    }
+
+    mediaAdvancedLoaded = true;
+
+    ensure360Script()
+        .then(function() {
+
+            loadMedia360Manifest('append');
+
+            if (pending360Init) {
+                init360Viewer();
+                pending360Init = false;
+            }
+
+            return ensureModelViewerScripts();
+
+        })
+        .catch(function(err) {
+
+            mediaAdvancedLoaded = false;
+
+            mlog('360 init failed', err);
+
+            $.notify('{{ __('Failed to initialize advanced media viewer.') }}', 'danger');
+
+        });
+
+});
+
+            $('#media_360_upload_btn')
+    .off('click.apm360Upload')
+    .on('click.apm360Upload', function(e) {
                 e.preventDefault();
 
                 var files = $('#media_360_frames')[0].files;
@@ -2720,8 +1946,11 @@
                 }
 
                 var uploadMode = $('#media_360_mode').val() || 'append';
+                var $uploadBtn = $('#media_360_upload_btn');
+                $uploadBtn.addClass('disabled').text('{{ __('Uploading…') }}');
                 $.ajax({
                     method: "POST",
+                    timeout: 30000,
                     url: "{{ route('admin-prod-media-360-upload', $data->id) }}",
                     data: fd,
                     contentType: false,
@@ -2735,208 +1964,82 @@
                                 $.notify(data.errors[error], "danger");
                             }
                         }
+                    },
+                                        error: function(xhr) {
+
+                        mlog('360 upload failed', xhr);
+
+                        $.notify(
+                            '{{ __('360 upload failed.') }}',
+                            'danger'
+                        );
+
+                    },
+                    complete: function() {
+                        $uploadBtn.removeClass('disabled').html('<i class="icofont-upload-alt"></i> {{ __('Upload 360 Frames') }}');
                     }
                 });
             });
 
-            $('#media_360_delete_btn').on('click', function(e) {
+            $('#media_360_delete_btn')
+    .off('click.apm360Delete')
+    .on('click.apm360Delete', function(e) {
                 e.preventDefault();
                 $.ajax({
                     method: "POST",
+                    timeout: 30000,
                     url: "{{ route('admin-prod-media-360-delete', $data->id) }}",
                     success: function(data) {
                         loadMedia360Manifest('replace');
                         $('.product-images-item').html('');
                         $.notify('{{ __('360° frames deleted.') }}', 'success');
-                    }
+                    },
+                                        error: function(xhr) {
+
+                        mlog('360 delete failed', xhr);
+
+                        $.notify(
+                            '{{ __('Failed to delete 360 frames.') }}',
+                            'danger'
+                        );
+
+                    },
                 });
             });
 
-            $('#media_360_preview_btn').on('click', function(e) {
+            $('#media_360_preview_btn')
+    .off('click.apm360Preview')
+    .on('click.apm360Preview', function(e) {
                 if ($(this).hasClass('disabled')) {
                     e.preventDefault();
                 }
             });
 
-            $('#media_360_enabled').on('change', function() {
+            $('#media_360_enabled')
+    .off('change.apm360Enabled')
+    .on('change.apm360Enabled', function() {
                 update360Warning();
             });
 
             $('#view360').on('shown.bs.modal', function() {
                 $(window).trigger('resize');
             });
+            $('#view360').on('hidden.bs.modal', function() {
+
+    hotspotDrag.active = false;
+    hotspotDrag.dot = null;
+    hotspotDrag.lastEvent = null;
+
+    if (hotspotDrag.raf) {
+        cancelAnimationFrame(hotspotDrag.raf);
+        hotspotDrag.raf = null;
+    }
+
+    $('#media_360_hotspot_overlay').removeClass('dragging');
+
+});
         });
     </script>
-
-    <style>
-        .media-hotspot-preview .lookbook-block {
-            position: relative;
-            width: 100%;
-        }
-
-        .media-hotspot-preview .lookbook-dot {
-            cursor: pointer;
-            position: absolute;
-            z-index: 2;
-            width: 29px;
-            height: 29px;
-            line-height: 29px;
-            border-radius: 50%;
-            background-color: #ffffff;
-            text-align: center;
-        }
-
-        .media-hotspot-preview .lookbook-dot span {
-            font-size: 12px;
-            color: #000000;
-        }
-
-        .media-hotspot-preview .lookbook-dot .dot-showbox {
-            visibility: hidden;
-            top: -98px;
-            left: 150%;
-            position: absolute;
-            width: 180px;
-            background-color: #ffffff;
-            box-shadow: -3px -3px 13px rgba(48, 54, 61, 0.1);
-            padding: 10px;
-        }
-
-        .media-hotspot-preview .lookbook-dot:hover .dot-showbox {
-            visibility: visible;
-        }
-
-        .media-hotspot-group {
-            border: 1px solid #eee;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 12px;
-        }
-
-        .media-hotspot-group-title {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .media-hotspot-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .media-hotspot-status {
-            display: inline-block;
-            margin-top: 6px;
-            font-size: 12px;
-        }
-
-        .media-hotspot-item.is-hidden {
-            opacity: 0.6;
-        }
-
-        .media-360-hotspots {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .media-360-hotspots .lookbook-dot {
-            pointer-events: auto;
-        }
-
-        .media-360-hotspots.dragging .dot-showbox {
-            visibility: hidden;
-        }
-
-        /* 360 view essentials to avoid stacked frames */
-        .product-image-360 {
-            position: relative;
-            overflow: hidden;
-            margin: 0 auto;
-        }
-
-        .product-image-360 .product-images-item {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        .product-image-360 .product-images-item li {
-            list-style: none;
-        }
-
-        .product-image-360 .product-images-item img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            max-width: 100%;
-            height: auto;
-        }
-
-        .product-image-360 .product-images-item img.previous-image {
-            visibility: hidden;
-        }
-
-        .product-image-360 .product-images-item img.current-image {
-            visibility: visible;
-        }
-
-        /* BigDeal nav bar styling + play/stop behavior (admin) */
-        .product-image-360 {
-            cursor: pointer;
-            min-height: 420px; /* prevents 0-height container when frames are absolute */
-        }
-
-        .product-image-360 .nav_bar {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            margin-left: -67.5px; /* 3 visible buttons (stop toggles play) */
-            z-index: 11;
-            background-color: #ffffff;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-            border-radius: 2px;
-        }
-
-        .product-image-360 .nav_bar a {
-            display: inline-block;
-            width: 45px;
-            height: 45px;
-            line-height: 45px;
-            text-align: center;
-            text-decoration: none;
-            color: #444444;
-            font-size: 18px;
-        }
-
-        /* icon fallback (admin does not include themify icons) */
-        .product-image-360 .nav_bar a i {
-            display: none;
-        }
-        .product-image-360 .nav_bar a.custom_previous:before { content: '‹'; }
-        .product-image-360 .nav_bar a.custom_next:before { content: '›'; }
-        .product-image-360 .nav_bar a.custom_play:before { content: '▶'; }
-        .product-image-360 .nav_bar a.custom_stop:before { content: '❚❚'; }
-
-        .custom_stop {
-            display: none !important;
-        }
-        .play-video .custom_play {
-            display: none !important;
-        }
-        .play-video .custom_stop {
-            display: inline-block !important;
-        }
-    </style>
 
     <script type="text/javascript">
         (function($) {
@@ -3017,7 +2120,16 @@
 
             var imgSrc = '';
             if (imgInput && imgInput.files && imgInput.files[0]) {
-                imgSrc = URL.createObjectURL(imgInput.files[0]);
+if (item.data('blobUrl')) {
+
+    URL.revokeObjectURL(item.data('blobUrl'));
+
+    item.removeData('blobUrl');
+}
+
+imgSrc = URL.createObjectURL(imgInput.files[0]);
+
+item.data('blobUrl', imgSrc);
             } else if (previewImg) {
                 imgSrc = previewImg;
             }
@@ -3102,6 +2214,24 @@
             return Math.max(0, Math.min(100, value));
         }
 
+        function waitForImageReady(img, callback) {
+    if (!img) return;
+
+    if (img.complete && img.naturalWidth > 0) {
+        callback();
+        return;
+    }
+
+    $(img)
+        .off('.apmImageReady')
+        .one('load.apmImageReady', function() {
+            callback();
+        })
+        .one('error.apmImageReady', function() {
+            console.warn('APM image failed to load');
+        });
+}
+
         function getPointer(e) {
             var evt = e.originalEvent || e;
             if (evt.touches && evt.touches.length) {
@@ -3147,6 +2277,20 @@
             lastEvent: null
         };
 
+        window.addEventListener('beforeunload', function() {
+
+    $('.media-hotspot-item').each(function() {
+
+        var blobUrl = $(this).data('blobUrl');
+
+        if (blobUrl) {
+            URL.revokeObjectURL(blobUrl);
+        }
+
+    });
+
+});
+
         function applyDragPosition(e) {
             if (!hotspotDrag.active || !hotspotDrag.dot) {
                 return;
@@ -3155,10 +2299,15 @@
             if (!img) {
                 return;
             }
-            var rect = img.getBoundingClientRect();
-            if (!rect.width || !rect.height) {
-                return;
-            }
+if (!img.complete || !img.naturalWidth) {
+    return;
+}
+
+var rect = img.getBoundingClientRect();
+
+if (!rect.width || !rect.height) {
+    return;
+}
 
             var pointer = getPointer(e);
             var x = ((pointer.clientX - rect.left) / rect.width) * 100;
@@ -3405,7 +2554,34 @@
             renderModel3dHotspots();
         });
 
-        refreshHotspotGroups();
+refreshHotspotGroups();
+function refreshHotspotRuntime() {
+
+    refreshHotspotGroups();
+    updateHotspotVisibility();
+
+    var activeFrame = $('#media_hotspot_frame_number').val();
+
+    if (typeof renderFrameHotspots === 'function') {
+        renderFrameHotspots(activeFrame);
+    }
+
+}
+
+hotspotIndex = $('.media-hotspot-item').length;
+
+var initialHotspotSrc = $('#media_hotspot_base')
+    .find(':selected')
+    .data('src');
+
+if (initialHotspotSrc) {
+
+    $('#media_hotspot_image')
+        .attr('src', initialHotspotSrc);
+
+}
+
+updateHotspotVisibility();
 
         $('#media_hotspot_frame_number').on('change', function() {
             updateFramePreview();
@@ -3429,21 +2605,34 @@
             $('#media_hotspot_image').attr('src', $.trim(img_array[idx]));
         }
 
-            $('#media_hotspot_image').on('click', function(e) {
-                if (!$('#media_hotspot_base').val()) {
-                    $.notify('{{ __('Please select a base image first.') }}', 'warning');
-                    return;
-                }
+$(document)
+    .off('click.apmHotspotCreate', '#media_hotspot_image')
+    .on('click.apmHotspotCreate', '#media_hotspot_image', function(e) {
 
-                var rect = this.getBoundingClientRect();
-                var x = ((e.clientX - rect.left) / rect.width) * 100;
-                var y = ((e.clientY - rect.top) / rect.height) * 100;
+        if (!$('#media_hotspot_base').val()) {
+            $.notify('{{ __('Please select a base image first.') }}', 'warning');
+            return;
+        }
 
-                x = Math.max(0, Math.min(100, x));
-                y = Math.max(0, Math.min(100, y));
+        var img = this;
 
-                var key = 'hs_' + Date.now() + '_' + hotspotIndex;
-                hotspotIndex += 1;
+        waitForImageReady(img, function() {
+
+            var rect = img.getBoundingClientRect();
+
+            if (!rect.width || !rect.height) {
+                console.warn('APM hotspot image dimensions unavailable');
+                return;
+            }
+
+            var x = ((e.clientX - rect.left) / rect.width) * 100;
+            var y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            x = Math.max(0, Math.min(100, x));
+            y = Math.max(0, Math.min(100, y));
+
+            var key = 'hs_' + Date.now() + '_' + hotspotIndex;
+            hotspotIndex += 1;
 
             var dotHtml = '<div class="lookbook-dot media-hotspot-dot" data-key="' + key + '" ' +
                 'style="left:' + x.toFixed(2) + '%; top:' + y.toFixed(2) + '%;">' +
@@ -3459,67 +2648,77 @@
                 '</a>' +
                 '</div>';
 
-                $('#media_hotspot_block').append(dotHtml);
+            $('#media_hotspot_block').append(dotHtml);
 
             var targetMode = $('#media_hotspot_target_mode').val() || 'image';
             var frameValue = $('#media_hotspot_frame_number').val() || '';
+
             var itemHtml = '<div class="media-hotspot-item row" data-key="' + key + '">' +
-                    '<div class="col-md-3">' +
-                    '<select class="input-field media-hotspot-type" name="media_hotspot_type[]">' +
-                    '<option value="text" selected>{{ __('Text') }}</option>' +
-                    '<option value="image">{{ __('Image') }}</option>' +
-                    '<option value="image_text">{{ __('Image + Text') }}</option>' +
-                    '</select>' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-text-wrap">' +
-                    '<input type="text" class="input-field media-hotspot-label" name="media_hotspot_label[]" placeholder="{{ __('Label') }}">' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-text-wrap">' +
-                    '<input type="text" class="input-field media-hotspot-desc" name="media_hotspot_description[]" placeholder="{{ __('Description') }}">' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-actions">' +
-                    '<a href="javascript:;" class="mybtn1 media-hotspot-toggle" title="{{ __('Toggle visibility') }}"><i class="fas fa-eye"></i></a>' +
-                    '<a href="javascript:;" class="mybtn1 media-hotspot-jump" title="{{ __('Jump to target') }}"><i class="fas fa-crosshairs"></i></a>' +
-                    '<a href="javascript:;" class="mybtn1 media-hotspot-remove" title="{{ __('Remove hotspot') }}"><i class="fas fa-times"></i></a>' +
-                    '</div>' +
-                    '<div class="col-md-6 media-hotspot-image-wrap" style="display:none;">' +
-                    '<input type="file" class="input-field media-hotspot-image" name="media_hotspot_image[]" accept=".jpg,.jpeg,.png,.webp" style="display:none;">' +
-                    '<div class="media-hotspot-thumb-wrap">' +
-                    '<img class="img-fluid media-hotspot-thumb" style="max-width:80px; margin-top:6px; display:none;" alt="">' +
-                    '</div>' +
-                    '<small class="text-muted">{{ __('Max 2MB') }}</small>' +
-                    '<div class="alert alert-danger media-hotspot-error" style="display:none; margin-top:6px;"></div>' +
-                    '<div style="margin-top:6px;">' +
-                    '<a href="javascript:;" class="mybtn1 media-hotspot-change-image"><i class="fas fa-image"></i> {{ __('Change image') }}</a>' +
-                    '<a href="javascript:;" class="mybtn1 media-hotspot-remove-image"><i class="fas fa-times"></i> {{ __('Remove image') }}</a>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
-                    '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-x3d" name="media_hotspot_x3d[]" placeholder="x">' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
-                    '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-y3d" name="media_hotspot_y3d[]" placeholder="y">' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
-                    '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-z3d" name="media_hotspot_z3d[]" placeholder="z">' +
-                    '</div>' +
-                    '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
-                    '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-orbit" name="media_hotspot_orbit[]" placeholder="{{ __('camera_orbit') }}">' +
-                    '</div>' +
-                    '<input type="hidden" name="media_hotspot_x[]" value="' + x.toFixed(2) + '">' +
-                    '<input type="hidden" name="media_hotspot_y[]" value="' + y.toFixed(2) + '">' +
-                    '<input type="hidden" class="media-hotspot-target" name="media_hotspot_target[]" value="' + targetMode + '">' +
-                    '<input type="hidden" class="media-hotspot-frame" name="media_hotspot_frame[]" value="' + frameValue + '">' +
-                    '<div class="col-12"><small class="text-muted media-hotspot-status"></small></div>' +
-                    '</div>';
+                '<div class="col-md-3">' +
+                '<select class="input-field media-hotspot-type" name="media_hotspot_type[]">' +
+                '<option value="text" selected>{{ __('Text') }}</option>' +
+                '<option value="image">{{ __('Image') }}</option>' +
+                '<option value="image_text">{{ __('Image + Text') }}</option>' +
+                '</select>' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-text-wrap">' +
+                '<input type="text" class="input-field media-hotspot-label" name="media_hotspot_label[]" placeholder="{{ __('Label') }}">' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-text-wrap">' +
+                '<input type="text" class="input-field media-hotspot-desc" name="media_hotspot_description[]" placeholder="{{ __('Description') }}">' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-actions">' +
+                '<a href="javascript:;" class="mybtn1 media-hotspot-toggle" title="{{ __('Toggle visibility') }}"><i class="fas fa-eye"></i></a>' +
+                '<a href="javascript:;" class="mybtn1 media-hotspot-jump" title="{{ __('Jump to target') }}"><i class="fas fa-crosshairs"></i></a>' +
+                '<a href="javascript:;" class="mybtn1 media-hotspot-remove" title="{{ __('Remove hotspot') }}"><i class="fas fa-times"></i></a>' +
+                '</div>' +
+                '<div class="col-md-6 media-hotspot-image-wrap" style="display:none;">' +
+                '<input type="file" class="input-field media-hotspot-image" name="media_hotspot_image[]" accept=".jpg,.jpeg,.png,.webp" style="display:none;">' +
+                '<div class="media-hotspot-thumb-wrap">' +
+                '<img class="img-fluid media-hotspot-thumb" style="max-width:80px; margin-top:6px; display:none;" alt="">' +
+                '</div>' +
+                '<small class="text-muted">{{ __('Max 2MB') }}</small>' +
+                '<div class="alert alert-danger media-hotspot-error" style="display:none; margin-top:6px;"></div>' +
+                '<div style="margin-top:6px;">' +
+                '<a href="javascript:;" class="mybtn1 media-hotspot-change-image"><i class="fas fa-image"></i> {{ __('Change image') }}</a>' +
+                '<a href="javascript:;" class="mybtn1 media-hotspot-remove-image"><i class="fas fa-times"></i> {{ __('Remove image') }}</a>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
+                '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-x3d" name="media_hotspot_x3d[]" placeholder="x">' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
+                '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-y3d" name="media_hotspot_y3d[]" placeholder="y">' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
+                '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-z3d" name="media_hotspot_z3d[]" placeholder="z">' +
+                '</div>' +
+                '<div class="col-md-3 media-hotspot-3d-wrap" style="display:none;">' +
+                '<input type="text" class="input-field media-hotspot-3d-input media-hotspot-orbit" name="media_hotspot_orbit[]" placeholder="{{ __('camera_orbit') }}">' +
+                '</div>' +
+                '<input type="hidden" name="media_hotspot_x[]" value="' + x.toFixed(2) + '">' +
+                '<input type="hidden" name="media_hotspot_y[]" value="' + y.toFixed(2) + '">' +
+                '<input type="hidden" class="media-hotspot-target" name="media_hotspot_target[]" value="' + targetMode + '">' +
+                '<input type="hidden" class="media-hotspot-frame" name="media_hotspot_frame[]" value="' + frameValue + '">' +
+                '<div class="col-12"><small class="text-muted media-hotspot-status"></small></div>' +
+                '</div>';
 
             var group = getHotspotGroup(targetMode);
+
             group.append(itemHtml);
+
             var newItem = $('.media-hotspot-item[data-key="' + key + '"]');
+
             setHotspotTargetFields(newItem, targetMode);
+
             updateHotspotContent(key);
+
             renderModel3dHotspots();
-            });
+
+        });
+
+    });
+
 
             $(document).on('input', '.media-hotspot-label, .media-hotspot-desc', function() {
                 var key = $(this).closest('.media-hotspot-item').data('key');
@@ -3646,9 +2845,32 @@
                 var item = $(this).closest('.media-hotspot-item');
                 var key = item.data('key');
                 $('.media-hotspot-dot[data-key="' + key + '"]').remove();
+                var blobUrl = item.data('blobUrl');
+
+if (blobUrl) {
+    URL.revokeObjectURL(blobUrl);
+}
                 item.remove();
                 refreshHotspotNumbers();
             });
+
+            $(window).on('beforeunload.apmCleanup', function() {
+
+    $('.media-hotspot-item').each(function() {
+
+        var blobUrl = $(this).data('blobUrl');
+
+        if (blobUrl) {
+
+            URL.revokeObjectURL(blobUrl);
+
+            $(this).removeData('blobUrl');
+
+        }
+
+    });
+
+});
 
         })(jQuery);
     </script>
@@ -3802,7 +3024,20 @@
                 }
             })
 
+$(window).on('beforeunload.apmCleanup', function() {
 
+    $('.media-hotspot-item').each(function() {
+
+        var blobUrl = $(this).data('blobUrl');
+
+        if (blobUrl) {
+            URL.revokeObjectURL(blobUrl);
+            $(this).removeData('blobUrl');
+        }
+
+    });
+
+});
 
         })(jQuery);
     </script>
